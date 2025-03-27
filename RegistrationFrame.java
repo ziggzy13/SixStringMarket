@@ -5,7 +5,6 @@ import com.sixstringmarket.util.ColorScheme;
 import com.sixstringmarket.util.ValidationUtils;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
@@ -13,7 +12,8 @@ import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Modern registration screen with animated validation, tooltips, and enhanced user experience
+ * Modern registration screen with real-time validation feedback,
+ * guided user experience, and musical-themed visual design.
  */
 public class RegistrationFrame extends JFrame {
     
@@ -39,11 +39,17 @@ public class RegistrationFrame extends JFrame {
     // Service
     private UserService userService;
     
+    // Animation timers
+    private Timer fadeTimer;
+    
+    // Initial mouse position for window dragging
+    private Point initialClick;
+    
     /**
      * Constructor
      */
     public RegistrationFrame() {
-        userService = new UserService();
+        this.userService = new UserService();
         
         // Window settings
         setTitle("SixStringMarket - Create Account");
@@ -53,11 +59,22 @@ public class RegistrationFrame extends JFrame {
         setResizable(false);
         setUndecorated(true);
         
-        // Initialize UI components
-        initComponents();
-        
-        // Set rounded corners for the window
-        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
+        try {
+            // Initialize UI components
+            initComponents();
+            setupDragSupport();
+            
+            // Set rounded corners for the window
+            setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                "Error initializing registration screen: " + e.getMessage(),
+                "Initialization Error",
+                JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
         
         // Focus on username field initially
         SwingUtilities.invokeLater(() -> usernameField.requestFocusInWindow());
@@ -146,9 +163,6 @@ public class RegistrationFrame extends JFrame {
         JPanel welcomePanel = createWelcomePanel();
         mainPanel.add(welcomePanel, BorderLayout.EAST);
         
-        // Make the window draggable
-        addDragSupport(backgroundPanel);
-        
         backgroundPanel.add(mainPanel, BorderLayout.CENTER);
         
         setContentPane(backgroundPanel);
@@ -185,6 +199,10 @@ public class RegistrationFrame extends JFrame {
                 backButton.setText("« Back to Login");
             }
         });
+        
+        JPanel backButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        backButtonPanel.setOpaque(false);
+        backButtonPanel.add(backButton);
         
         // Control buttons on right
         JPanel controlButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
@@ -239,12 +257,8 @@ public class RegistrationFrame extends JFrame {
         controlButtonsPanel.add(closeBtn);
         
         // Add components to panel
-        JPanel buttonContainerPanel = new JPanel(new BorderLayout());
-        buttonContainerPanel.setOpaque(false);
-        buttonContainerPanel.add(backButton, BorderLayout.WEST);
-        buttonContainerPanel.add(controlButtonsPanel, BorderLayout.EAST);
-        
-        panel.add(buttonContainerPanel, BorderLayout.CENTER);
+        panel.add(backButtonPanel, BorderLayout.WEST);
+        panel.add(controlButtonsPanel, BorderLayout.EAST);
         
         return panel;
     }
@@ -618,18 +632,18 @@ public class RegistrationFrame extends JFrame {
     }
     
     /**
-     * Create a styled text field
+     * Create a styled text field with visual enhancements
      */
     private JTextField createStyledTextField() {
         JTextField field = new JTextField();
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBackground(ColorScheme.FIELD_BG);
-        field.setForeground(ColorScheme.TEXT);
-        field.setCaretColor(ColorScheme.TEXT);
         field.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
             BorderFactory.createEmptyBorder(8, 8, 8, 8)
         ));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBackground(ColorScheme.FIELD_BG);
+        field.setForeground(ColorScheme.TEXT);
+        field.setCaretColor(ColorScheme.TEXT);
         
         // Add focus effect
         field.addFocusListener(new FocusAdapter() {
@@ -654,18 +668,18 @@ public class RegistrationFrame extends JFrame {
     }
     
     /**
-     * Create a styled password field
+     * Create a styled password field with visual enhancements
      */
     private JPasswordField createStyledPasswordField() {
         JPasswordField field = new JPasswordField();
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBackground(ColorScheme.FIELD_BG);
-        field.setForeground(ColorScheme.TEXT);
-        field.setCaretColor(ColorScheme.TEXT);
         field.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
             BorderFactory.createEmptyBorder(8, 8, 8, 8)
         ));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBackground(ColorScheme.FIELD_BG);
+        field.setForeground(ColorScheme.TEXT);
+        field.setCaretColor(ColorScheme.TEXT);
         
         // Add focus effect
         field.addFocusListener(new FocusAdapter() {
@@ -728,28 +742,33 @@ public class RegistrationFrame extends JFrame {
     }
     
     /**
-     * Add window drag functionality
+     * Setup draggable functionality to move the window
      */
-    private void addDragSupport(JPanel panel) {
-        MouseAdapter dragAdapter = new MouseAdapter() {
-            private int dragStartX, dragStartY;
-            
+    private void setupDragSupport() {
+        addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                dragStartX = e.getX();
-                dragStartY = e.getY();
+                initialClick = e.getPoint();
             }
-            
+        });
+        
+        addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                int newX = getLocation().x + e.getX() - dragStartX;
-                int newY = getLocation().y + e.getY() - dragStartY;
+                // Get current location of the frame
+                int thisX = getLocation().x;
+                int thisY = getLocation().y;
+                
+                // Determine how much the mouse moved
+                int xMoved = e.getX() - initialClick.x;
+                int yMoved = e.getY() - initialClick.y;
+                
+                // Move window to this position
+                int newX = thisX + xMoved;
+                int newY = thisY + yMoved;
                 setLocation(newX, newY);
             }
-        };
-        
-        panel.addMouseListener(dragAdapter);
-        panel.addMouseMotionListener(dragAdapter);
+        });
     }
     
     /**

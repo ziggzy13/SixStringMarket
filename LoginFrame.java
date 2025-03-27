@@ -10,16 +10,24 @@ import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Modern login screen with sleek design, animations and enhanced user experience
+ * Modern login screen with animations, subtle guitar-themed design elements,
+ * and intuitive, user-friendly interaction
  */
 public class LoginFrame extends JFrame {
     
+    // UI Components
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
     private JButton registerButton;
     private JLabel statusLabel;
-    private Timer focusEffectTimer;
+    
+    // Animation components
+    private Timer fadeTimer;
+    private Timer shakeTimer;
+    
+    // Initial mouse position for dragging
+    private Point initialClick;
     
     /**
      * Constructor
@@ -34,10 +42,21 @@ public class LoginFrame extends JFrame {
         setUndecorated(true);
         
         // Initialize components
-        initComponents();
-        
-        // Add shadow border and rounded corners
-        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
+        try {
+            initComponents();
+            setupDragSupport();
+            
+            // Set rounded corners
+            setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                "Error initializing login screen: " + e.getMessage(),
+                "Initialization Error",
+                JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
         
         // Focus on username field
         SwingUtilities.invokeLater(() -> usernameField.requestFocusInWindow());
@@ -47,12 +66,12 @@ public class LoginFrame extends JFrame {
      * Initialize UI components
      */
     private void initComponents() {
-        // Main background panel with gradient
+        // Main background panel with gradient and guitar silhouettes
         JPanel backgroundPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
+                Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
                 // Create gradient background
@@ -64,11 +83,13 @@ public class LoginFrame extends JFrame {
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 
                 // Draw decorative guitar silhouettes
-                drawGuitarSilhouettes(g2d);
+                drawGuitarDecorations(g2d);
+                
+                g2d.dispose();
             }
             
-            private void drawGuitarSilhouettes(Graphics2D g2d) {
-                g2d.setColor(new Color(255, 255, 255, 12)); // Very subtle white
+            private void drawGuitarDecorations(Graphics2D g2d) {
+                g2d.setColor(new Color(255, 255, 255, 15)); // Very subtle white
                 
                 // Bottom right large guitar
                 drawGuitar(g2d, getWidth() - 100, getHeight() - 130, 180);
@@ -76,13 +97,13 @@ public class LoginFrame extends JFrame {
                 // Top left small guitar
                 drawGuitar(g2d, 80, 150, 100);
                 
-                // Some decorative music notes and symbols
+                // Musical notes
                 g2d.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 20));
                 g2d.drawString("♪", 50, 400);
                 g2d.drawString("♫", 350, 200);
                 g2d.drawString("♪", 280, 450);
                 
-                // Strings/waves
+                // Decorative strings/waves
                 g2d.setStroke(new BasicStroke(1.0f));
                 for (int i = 1; i <= 5; i++) {
                     int y = getHeight() - 100 + i * 15;
@@ -115,15 +136,12 @@ public class LoginFrame extends JFrame {
         };
         backgroundPanel.setLayout(new BorderLayout());
         
-        // Window controls (close/minimize buttons)
+        // Window controls panel
         JPanel controlsPanel = createWindowControlsPanel();
         backgroundPanel.add(controlsPanel, BorderLayout.NORTH);
         
         // Login form panel
         JPanel loginFormPanel = createLoginFormPanel();
-        
-        // Add draggable behavior to form panel
-        addDragSupport(loginFormPanel);
         
         // Center the login panel
         JPanel centerPanel = new JPanel(new GridBagLayout());
@@ -199,12 +217,12 @@ public class LoginFrame extends JFrame {
      * Create the main login form panel
      */
     private JPanel createLoginFormPanel() {
-        // Main container with modern styling
+        // Card panel with modern styling
         JPanel loginPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
+                Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
                 // Panel background
@@ -277,6 +295,14 @@ public class LoginFrame extends JFrame {
         passwordIcon.setForeground(ColorScheme.TEXT);
         
         passwordField = createStyledPasswordField("Password");
+        passwordField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    performLogin();
+                }
+            }
+        });
         
         passwordPanel.add(createFieldHeaderLabel("Password"), BorderLayout.NORTH);
         passwordPanel.add(passwordIcon, BorderLayout.WEST);
@@ -314,16 +340,6 @@ public class LoginFrame extends JFrame {
         
         // Login action
         loginButton.addActionListener(e -> performLogin());
-        
-        // Also login on Enter key in password field
-        passwordField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    performLogin();
-                }
-            }
-        });
         
         // Register link
         registerButton = new JButton("Don't have an account? Create one");
@@ -516,28 +532,35 @@ public class LoginFrame extends JFrame {
     }
     
     /**
-     * Add draggable functionality to move the window
+     * Setup draggable functionality to move the window
      */
-    private void addDragSupport(JPanel panel) {
-        MouseAdapter dragAdapter = new MouseAdapter() {
-            private int dragStartX, dragStartY;
-            
+    private void setupDragSupport() {
+        // Add a mouse listener to track when the mouse is pressed
+        addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                dragStartX = e.getX();
-                dragStartY = e.getY();
+                initialClick = e.getPoint();
             }
-            
+        });
+        
+        // Add a mouse motion listener to move the window
+        addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                int newX = getLocation().x + e.getX() - dragStartX;
-                int newY = getLocation().y + e.getY() - dragStartY;
+                // Get current location of the frame
+                int thisX = getLocation().x;
+                int thisY = getLocation().y;
+                
+                // Determine how much the mouse moved
+                int xMoved = e.getX() - initialClick.x;
+                int yMoved = e.getY() - initialClick.y;
+                
+                // Move window to this position
+                int newX = thisX + xMoved;
+                int newY = thisY + yMoved;
                 setLocation(newX, newY);
             }
-        };
-        
-        panel.addMouseListener(dragAdapter);
-        panel.addMouseMotionListener(dragAdapter);
+        });
     }
     
     /**
@@ -607,8 +630,13 @@ public class LoginFrame extends JFrame {
         statusLabel.setForeground(new Color(231, 76, 60, 0)); // Start transparent
         statusLabel.setText(message);
         
+        // Stop any running fade animation
+        if (fadeTimer != null && fadeTimer.isRunning()) {
+            fadeTimer.stop();
+        }
+        
         // Start fade-in animation
-        final Timer fadeTimer = new Timer(20, null);
+        fadeTimer = new Timer(20, null);
         fadeTimer.addActionListener(new ActionListener() {
             int alpha = 0;
             
@@ -633,7 +661,13 @@ public class LoginFrame extends JFrame {
      */
     private void shakeLoginButton() {
         final int originalX = loginButton.getLocation().x;
-        final Timer shakeTimer = new Timer(30, null);
+        
+        // Stop any running shake animation
+        if (shakeTimer != null && shakeTimer.isRunning()) {
+            shakeTimer.stop();
+        }
+        
+        shakeTimer = new Timer(30, null);
         
         shakeTimer.addActionListener(new ActionListener() {
             int count = 0;

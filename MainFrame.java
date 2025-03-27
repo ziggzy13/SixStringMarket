@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Modern main application window with responsive design,
- * animated transitions, and enhanced user experience
+ * Main application window of SixStringMarket with responsive design,
+ * smooth animated transitions, and enhanced user experience
  */
 public class MainFrame extends JFrame {
     
@@ -37,13 +37,15 @@ public class MainFrame extends JFrame {
     // Animation components
     private Timer animationTimer;
     private boolean sidebarCollapsed = false;
+    private final int EXPANDED_SIDEBAR_WIDTH = 220;
+    private final int COLLAPSED_SIDEBAR_WIDTH = 60;
     
     /**
      * NavButton class for custom navigation buttons
      */
     private class NavButton extends JPanel {
-        private String text;
-        private String icon;
+        private final String text;
+        private final String icon;
         private boolean selected;
         private ActionListener actionListener;
         
@@ -55,7 +57,7 @@ public class MainFrame extends JFrame {
             setOpaque(false);
             setCursor(new Cursor(Cursor.HAND_CURSOR));
             setBackground(ColorScheme.TRANSPARENT);
-            setPreferredSize(new Dimension(200, 40));
+            setPreferredSize(new Dimension(EXPANDED_SIDEBAR_WIDTH, 40));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
             
             addMouseListener(new MouseAdapter() {
@@ -117,7 +119,7 @@ public class MainFrame extends JFrame {
             g2d.setColor(selected ? ColorScheme.TEXT : ColorScheme.TEXT_SECONDARY);
             g2d.drawString(icon, 15, 25);
             
-            // Draw text
+            // Draw text only if sidebar is expanded
             if (!sidebarCollapsed) {
                 g2d.setFont(new Font("Segoe UI", selected ? Font.BOLD : Font.PLAIN, 14));
                 g2d.drawString(text, 45, 25);
@@ -141,12 +143,20 @@ public class MainFrame extends JFrame {
         setMinimumSize(new Dimension(900, 600));
         setLocationRelativeTo(null);
         
-        // Initialize UI components
-        initComponents();
-        
-        // Show home screen by default
-        setActiveNavButton(0);
-        showGuitarListPanel();
+        // Initialize UI components with better error handling
+        try {
+            initComponents();
+            
+            // Show home screen by default
+            setActiveNavButton(0);
+            showGuitarListPanel();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                "Error initializing UI: " + e.getMessage(),
+                "Initialization Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     /**
@@ -194,7 +204,7 @@ public class MainFrame extends JFrame {
         // Sidebar container
         JPanel sidebar = new JPanel(new BorderLayout());
         sidebar.setBackground(ColorScheme.PRIMARY);
-        sidebar.setPreferredSize(new Dimension(220, 0));
+        sidebar.setPreferredSize(new Dimension(EXPANDED_SIDEBAR_WIDTH, 0));
         
         // App logo and title at top
         JPanel logoPanel = new JPanel(new BorderLayout(10, 0));
@@ -524,7 +534,6 @@ public class MainFrame extends JFrame {
         JPanel statusBar = new JPanel(new BorderLayout());
         statusBar.setBackground(ColorScheme.CARD_BG);
         statusBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, ColorScheme.darken(ColorScheme.CARD_BG, 0.1f)));
-        statusBar.add(Box.createVerticalStrut(1));
         
         // Version info
         JLabel versionLabel = new JLabel("SixStringMarket v1.0");
@@ -551,7 +560,7 @@ public class MainFrame extends JFrame {
         sidebarCollapsed = !sidebarCollapsed;
         
         // Target width
-        final int targetWidth = sidebarCollapsed ? 60 : 220;
+        final int targetWidth = sidebarCollapsed ? COLLAPSED_SIDEBAR_WIDTH : EXPANDED_SIDEBAR_WIDTH;
         final int startWidth = sidebarPanel.getWidth();
         final int distance = targetWidth - startWidth;
         
@@ -560,7 +569,7 @@ public class MainFrame extends JFrame {
         toggleButton.setEnabled(false);
         toggleButton.setText(sidebarCollapsed ? "»" : "«");
         
-        // Animation
+        // Stop any running animation
         if (animationTimer != null && animationTimer.isRunning()) {
             animationTimer.stop();
         }
@@ -589,9 +598,11 @@ public class MainFrame extends JFrame {
                     return;
                 }
                 
-                // Calculate intermediate width
+                // Calculate intermediate width using easing for smoother animation
                 float progress = (float) currentStep[0] / steps;
-                int newWidth = startWidth + (int) (distance * progress);
+                // Quadratic easing for smoother transition
+                float easedProgress = progress * (2 - progress);
+                int newWidth = startWidth + (int) (distance * easedProgress);
                 sidebarPanel.setPreferredSize(new Dimension(newWidth, 0));
                 mainPanel.revalidate();
             }
@@ -604,6 +615,10 @@ public class MainFrame extends JFrame {
      * Set active navigation button
      */
     private void setActiveNavButton(int index) {
+        if (index < 0 || index >= navButtons.size()) {
+            return;
+        }
+        
         activeNavIndex = index;
         
         // Update navigation buttons
@@ -616,8 +631,16 @@ public class MainFrame extends JFrame {
      * Update header title
      */
     private void updateHeaderTitle(String title) {
-        JLabel titleLabel = (JLabel) ((JPanel) headerPanel.getComponent(0)).getComponent(0);
-        titleLabel.setText(title);
+        if (headerPanel == null || headerPanel.getComponentCount() == 0) {
+            return;
+        }
+        
+        try {
+            JLabel titleLabel = (JLabel) ((JPanel) headerPanel.getComponent(0)).getComponent(0);
+            titleLabel.setText(title);
+        } catch (Exception e) {
+            System.err.println("Error updating header title: " + e.getMessage());
+        }
     }
     
     /**
@@ -655,10 +678,19 @@ public class MainFrame extends JFrame {
         logoutButton.setBorderPainted(false);
         logoutButton.setFocusPainted(false);
         logoutButton.addActionListener(e -> {
-            AuthenticationService.getInstance().logout();
-            dialog.dispose();
-            dispose();
-            new LoginFrame().setVisible(true);
+            try {
+                AuthenticationService.getInstance().logout();
+                dialog.dispose();
+                dispose();
+                new LoginFrame().setVisible(true);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    dialog,
+                    "Error during logout: " + ex.getMessage(),
+                    "Logout Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
         });
         
         buttonPanel.add(cancelButton);
@@ -675,170 +707,225 @@ public class MainFrame extends JFrame {
      * Show guitar list panel
      */
     public void showGuitarListPanel() {
-        // Check if panel already exists
-        if (contentCardPanel.getComponentCount() > 0) {
-            try {
-                contentCardLayout.show(contentCardPanel, "guitarList");
-                updateHeaderTitle("All Guitars");
-                return;
-            } catch (IllegalArgumentException e) {
-                // Panel doesn't exist yet, create it
+        try {
+            // Check if panel already exists
+            if (contentCardPanel.getComponentCount() > 0) {
+                try {
+                    contentCardLayout.show(contentCardPanel, "guitarList");
+                    updateHeaderTitle("All Guitars");
+                    return;
+                } catch (IllegalArgumentException e) {
+                    // Panel doesn't exist yet, create it
+                }
             }
+            
+            // Create panel
+            GuitarListPanel guitarListPanel = new GuitarListPanel(this);
+            contentCardPanel.add(guitarListPanel, "guitarList");
+            contentCardLayout.show(contentCardPanel, "guitarList");
+            updateHeaderTitle("All Guitars");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error loading guitar list: " + e.getMessage());
         }
-        
-        // Create panel
-        GuitarListPanel guitarListPanel = new GuitarListPanel(this);
-        contentCardPanel.add(guitarListPanel, "guitarList");
-        contentCardLayout.show(contentCardPanel, "guitarList");
-        updateHeaderTitle("All Guitars");
     }
     
     /**
      * Show guitar details panel
      */
     public void showGuitarDetailsPanel(int guitarId) {
-        // Create unique key for this guitar
-        String key = "guitarDetails_" + guitarId;
-        
-        // Create panel if it doesn't exist
-        GuitarDetailsPanel guitarDetailsPanel = new GuitarDetailsPanel(this, guitarId);
-        contentCardPanel.add(guitarDetailsPanel, key);
-        contentCardLayout.show(contentCardPanel, key);
-        updateHeaderTitle("Guitar Details");
+        try {
+            // Create unique key for this guitar
+            String key = "guitarDetails_" + guitarId;
+            
+            // Create panel
+            GuitarDetailsPanel guitarDetailsPanel = new GuitarDetailsPanel(this, guitarId);
+            contentCardPanel.add(guitarDetailsPanel, key);
+            contentCardLayout.show(contentCardPanel, key);
+            updateHeaderTitle("Guitar Details");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error loading guitar details: " + e.getMessage());
+        }
     }
     
     /**
      * Show my guitars panel
      */
     public void showMyGuitarsPanel() {
-        // Check if panel already exists
-        if (contentCardPanel.getComponentCount() > 0) {
-            try {
-                contentCardLayout.show(contentCardPanel, "myGuitars");
-                updateHeaderTitle("My Listings");
-                return;
-            } catch (IllegalArgumentException e) {
-                // Panel doesn't exist yet, create it
+        try {
+            // Check if panel already exists
+            if (contentCardPanel.getComponentCount() > 0) {
+                try {
+                    contentCardLayout.show(contentCardPanel, "myGuitars");
+                    updateHeaderTitle("My Listings");
+                    return;
+                } catch (IllegalArgumentException e) {
+                    // Panel doesn't exist yet, create it
+                }
             }
+            
+            // Create panel
+            GuitarListPanel myGuitarsPanel = new GuitarListPanel(this, currentUser.getUserId());
+            contentCardPanel.add(myGuitarsPanel, "myGuitars");
+            contentCardLayout.show(contentCardPanel, "myGuitars");
+            updateHeaderTitle("My Listings");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error loading your guitar listings: " + e.getMessage());
         }
-        
-        // Create panel
-        GuitarListPanel myGuitarsPanel = new GuitarListPanel(this, currentUser.getUserId());
-        contentCardPanel.add(myGuitarsPanel, "myGuitars");
-        contentCardLayout.show(contentCardPanel, "myGuitars");
-        updateHeaderTitle("My Listings");
     }
     
     /**
      * Show saved guitars panel
      */
     public void showSavedGuitarsPanel() {
-        // Check if panel already exists
-        if (contentCardPanel.getComponentCount() > 0) {
-            try {
-                contentCardLayout.show(contentCardPanel, "savedGuitars");
-                updateHeaderTitle("Saved Guitars");
-                return;
-            } catch (IllegalArgumentException e) {
-                // Panel doesn't exist yet, create it
+        try {
+            // Check if panel already exists
+            if (contentCardPanel.getComponentCount() > 0) {
+                try {
+                    contentCardLayout.show(contentCardPanel, "savedGuitars");
+                    updateHeaderTitle("Saved Guitars");
+                    return;
+                } catch (IllegalArgumentException e) {
+                    // Panel doesn't exist yet, create it
+                }
             }
+            
+            // Create panel
+            SavedGuitarsPanel savedGuitarsPanel = new SavedGuitarsPanel(this);
+            contentCardPanel.add(savedGuitarsPanel, "savedGuitars");
+            contentCardLayout.show(contentCardPanel, "savedGuitars");
+            updateHeaderTitle("Saved Guitars");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error loading saved guitars: " + e.getMessage());
         }
-        
-        // Create panel
-        SavedGuitarsPanel savedGuitarsPanel = new SavedGuitarsPanel(this);
-        contentCardPanel.add(savedGuitarsPanel, "savedGuitars");
-        contentCardLayout.show(contentCardPanel, "savedGuitars");
-        updateHeaderTitle("Saved Guitars");
     }
     
     /**
      * Show order history panel
      */
     public void showOrderHistoryPanel() {
-        // Check if panel already exists
-        if (contentCardPanel.getComponentCount() > 0) {
-            try {
-                contentCardLayout.show(contentCardPanel, "orderHistory");
-                updateHeaderTitle("Order History");
-                return;
-            } catch (IllegalArgumentException e) {
-                // Panel doesn't exist yet, create it
+        try {
+            // Check if panel already exists
+            if (contentCardPanel.getComponentCount() > 0) {
+                try {
+                    contentCardLayout.show(contentCardPanel, "orderHistory");
+                    updateHeaderTitle("Order History");
+                    return;
+                } catch (IllegalArgumentException e) {
+                    // Panel doesn't exist yet, create it
+                }
             }
+            
+            // Create panel
+            OrderHistoryPanel orderHistoryPanel = new OrderHistoryPanel(this);
+            contentCardPanel.add(orderHistoryPanel, "orderHistory");
+            contentCardLayout.show(contentCardPanel, "orderHistory");
+            updateHeaderTitle("Order History");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error loading order history: " + e.getMessage());
         }
-        
-        // Create panel
-        OrderHistoryPanel orderHistoryPanel = new OrderHistoryPanel(this);
-        contentCardPanel.add(orderHistoryPanel, "orderHistory");
-        contentCardLayout.show(contentCardPanel, "orderHistory");
-        updateHeaderTitle("Order History");
     }
     
     /**
      * Show user profile panel
      */
     public void showUserProfilePanel() {
-        // Check if panel already exists
-        if (contentCardPanel.getComponentCount() > 0) {
-            try {
-                contentCardLayout.show(contentCardPanel, "userProfile");
-                updateHeaderTitle("My Profile");
-                return;
-            } catch (IllegalArgumentException e) {
-                // Panel doesn't exist yet, create it
+        try {
+            // Check if panel already exists
+            if (contentCardPanel.getComponentCount() > 0) {
+                try {
+                    contentCardLayout.show(contentCardPanel, "userProfile");
+                    updateHeaderTitle("My Profile");
+                    return;
+                } catch (IllegalArgumentException e) {
+                    // Panel doesn't exist yet, create it
+                }
             }
+            
+            // Create panel
+            UserProfilePanel userProfilePanel = new UserProfilePanel(this);
+            contentCardPanel.add(userProfilePanel, "userProfile");
+            contentCardLayout.show(contentCardPanel, "userProfile");
+            updateHeaderTitle("My Profile");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error loading user profile: " + e.getMessage());
         }
-        
-        // Create panel
-        UserProfilePanel userProfilePanel = new UserProfilePanel(this);
-        contentCardPanel.add(userProfilePanel, "userProfile");
-        contentCardLayout.show(contentCardPanel, "userProfile");
-        updateHeaderTitle("My Profile");
     }
     
     /**
      * Show admin panel
      */
     public void showAdminPanel() {
-        // Make sure user is admin
-        if (!AuthenticationService.getInstance().isAdmin()) {
-            JOptionPane.showMessageDialog(this,
-                "You do not have permission to access the admin panel.",
-                "Access Denied",
-                JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        // Check if panel already exists
-        if (contentCardPanel.getComponentCount() > 0) {
-            try {
-                contentCardLayout.show(contentCardPanel, "adminPanel");
-                updateHeaderTitle("Admin Panel");
+        try {
+            // Make sure user is admin
+            if (!AuthenticationService.getInstance().isAdmin()) {
+                JOptionPane.showMessageDialog(this,
+                    "You do not have permission to access the admin panel.",
+                    "Access Denied",
+                    JOptionPane.WARNING_MESSAGE);
                 return;
-            } catch (IllegalArgumentException e) {
-                // Panel doesn't exist yet, create it
             }
+            
+            // Check if panel already exists
+            if (contentCardPanel.getComponentCount() > 0) {
+                try {
+                    contentCardLayout.show(contentCardPanel, "adminPanel");
+                    updateHeaderTitle("Admin Panel");
+                    return;
+                } catch (IllegalArgumentException e) {
+                    // Panel doesn't exist yet, create it
+                }
+            }
+            
+            // Create panel
+            AdminPanel adminPanel = new AdminPanel(this);
+            contentCardPanel.add(adminPanel, "adminPanel");
+            contentCardLayout.show(contentCardPanel, "adminPanel");
+            updateHeaderTitle("Admin Panel");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error loading admin panel: " + e.getMessage());
         }
-        
-        // Create panel
-        AdminPanel adminPanel = new AdminPanel(this);
-        contentCardPanel.add(adminPanel, "adminPanel");
-        contentCardLayout.show(contentCardPanel, "adminPanel");
-        updateHeaderTitle("Admin Panel");
     }
     
     /**
      * Show add guitar frame
      */
     public void showAddGuitarFrame() {
-        AddGuitarFrame addGuitarFrame = new AddGuitarFrame(this);
-        addGuitarFrame.setVisible(true);
+        try {
+            AddGuitarFrame addGuitarFrame = new AddGuitarFrame(this);
+            addGuitarFrame.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error opening add guitar form: " + e.getMessage());
+        }
     }
     
     /**
      * Show edit guitar frame
      */
     public void showEditGuitarFrame(int guitarId) {
-        EditGuitarFrame editGuitarFrame = new EditGuitarFrame(this, guitarId);
-        editGuitarFrame.setVisible(true);
+        try {
+            EditGuitarFrame editGuitarFrame = new EditGuitarFrame(this, guitarId);
+            editGuitarFrame.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorMessage("Error opening edit guitar form: " + e.getMessage());
+        }
     }
-}	
+    
+    /**
+     * Show error message dialog
+     */
+    private void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(this,
+            message,
+            "Error",
+            JOptionPane.ERROR_MESSAGE);
+    }
+}
