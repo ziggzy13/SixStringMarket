@@ -1,10 +1,11 @@
 package com.sixstringmarket.ui;
 
 import com.sixstringmarket.service.UserService;
-import com.sixstringmarket.util.ColorScheme;
+import com.sixstringmarket.util.Constants;
 import com.sixstringmarket.util.ValidationUtils;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
@@ -12,8 +13,7 @@ import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Modern registration screen with real-time validation feedback,
- * guided user experience, and musical-themed visual design.
+ * Modern registration screen with real-time validation and a clean user interface
  */
 public class RegistrationFrame extends JFrame {
     
@@ -39,42 +39,28 @@ public class RegistrationFrame extends JFrame {
     // Service
     private UserService userService;
     
-    // Animation timers
-    private Timer fadeTimer;
-    
-    // Initial mouse position for window dragging
-    private Point initialClick;
-    
     /**
      * Constructor
      */
     public RegistrationFrame() {
-        this.userService = new UserService();
+        userService = new UserService();
         
         // Window settings
         setTitle("SixStringMarket - Create Account");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 650);
+        setSize(950, 650);
         setLocationRelativeTo(null);
         setResizable(false);
-        setUndecorated(true);
         
+        // Use the system look and feel
         try {
-            // Initialize UI components
-            initComponents();
-            setupDragSupport();
-            
-            // Set rounded corners for the window
-            setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
-            
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null,
-                "Error initializing registration screen: " + e.getMessage(),
-                "Initialization Error",
-                JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
         }
+        
+        // Initialize UI components
+        initComponents();
         
         // Focus on username field initially
         SwingUtilities.invokeLater(() -> usernameField.requestFocusInWindow());
@@ -84,237 +70,129 @@ public class RegistrationFrame extends JFrame {
      * Initialize UI components
      */
     private void initComponents() {
-        // Main background panel with gradient and decorations
-        JPanel backgroundPanel = new JPanel() {
+        // Main panel with a gradient background
+        JPanel mainPanel = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Create gradient background
+                // Create gradient background - dark blue to navy
                 GradientPaint gradient = new GradientPaint(
-                    0, 0, ColorScheme.PRIMARY,
-                    getWidth(), getHeight(), ColorScheme.BACKGROUND
+                    0, 0, new Color(37, 40, 61),
+                    0, getHeight(), new Color(25, 28, 45)
                 );
                 g2d.setPaint(gradient);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 
-                // Add decorative elements
-                drawDecorations(g2d);
-                
                 g2d.dispose();
             }
-            
-            private void drawDecorations(Graphics2D g2d) {
-                // Draw some guitar silhouettes and musical symbols
-                g2d.setColor(new Color(255, 255, 255, 15)); // Very subtle white
-                
-                // Add some decorative circles in the background
-                for (int i = 0; i < 8; i++) {
-                    int size = 50 + (int)(Math.random() * 200);
-                    int x = (int)(Math.random() * getWidth());
-                    int y = (int)(Math.random() * getHeight());
-                    g2d.fillOval(x - size/2, y - size/2, size, size);
-                }
-                
-                // Draw a guitar in bottom right
-                drawGuitar(g2d, getWidth() - 120, getHeight() - 100, 220);
-                
-                // Draw music notes
-                g2d.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 24));
-                g2d.drawString("♪", 100, 150);
-                g2d.drawString("♫", 650, 250);
-                g2d.drawString("♬", 250, 500);
-            }
-            
-            private void drawGuitar(Graphics2D g2d, int x, int y, int size) {
-                // Draw guitar body (oval)
-                int bodyWidth = size/2;
-                int bodyHeight = (int) (size/1.5f);
-                g2d.fillOval(x - bodyWidth/2, y - bodyHeight/2, bodyWidth, bodyHeight);
-                
-                // Draw guitar neck (rectangle)
-                int neckWidth = size/8;
-                int neckHeight = size/2;
-                g2d.fillRect(x - neckWidth/2, y - bodyHeight/2 - neckHeight, neckWidth, neckHeight);
-                
-                // Draw guitar head (small rectangle)
-                int headWidth = size/6;
-                int headHeight = size/10;
-                g2d.fillRect(x - headWidth/2, y - bodyHeight/2 - neckHeight - headHeight, headWidth, headHeight);
-            }
         };
-        backgroundPanel.setLayout(new BorderLayout());
         
-        // Window controls
-        JPanel windowControlsPanel = createWindowControlsPanel();
-        backgroundPanel.add(windowControlsPanel, BorderLayout.NORTH);
+        // Header with back button
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+        headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
         
-        // Main container panel
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setOpaque(false);
-        
-        // Left panel with form
-        JPanel formPanel = createFormPanel();
-        mainPanel.add(formPanel, BorderLayout.CENTER);
-        
-        // Right panel with guitar image and welcome
-        JPanel welcomePanel = createWelcomePanel();
-        mainPanel.add(welcomePanel, BorderLayout.EAST);
-        
-        backgroundPanel.add(mainPanel, BorderLayout.CENTER);
-        
-        setContentPane(backgroundPanel);
-    }
-    
-    /**
-     * Create window control buttons (close, minimize)
-     */
-    private JPanel createWindowControlsPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setOpaque(false);
-        
-        // Back button on left
         backButton = new JButton("« Back to Login");
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        backButton.setForeground(ColorScheme.TEXT);
-        backButton.setBorderPainted(false);
+        backButton.setForeground(Color.WHITE);
         backButton.setContentAreaFilled(false);
+        backButton.setBorderPainted(false);
         backButton.setFocusPainted(false);
         backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         backButton.addActionListener(e -> backToLogin());
         
-        // Hover effect
+        // Hover effects
         backButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                backButton.setForeground(ColorScheme.SECONDARY);
-                backButton.setText("<html><u>« Back to Login</u></html>");
+                backButton.setForeground(new Color(186, 80, 80)); // Accent color
             }
             
             @Override
             public void mouseExited(MouseEvent e) {
-                backButton.setForeground(ColorScheme.TEXT);
-                backButton.setText("« Back to Login");
+                backButton.setForeground(Color.WHITE);
             }
         });
         
-        JPanel backButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        backButtonPanel.setOpaque(false);
-        backButtonPanel.add(backButton);
+        headerPanel.add(backButton, BorderLayout.WEST);
         
-        // Control buttons on right
-        JPanel controlButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        controlButtonsPanel.setOpaque(false);
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
         
-        // Minimize button
-        JButton minimizeBtn = new JButton("—");
-        minimizeBtn.setForeground(ColorScheme.TEXT);
-        minimizeBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        minimizeBtn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        minimizeBtn.setContentAreaFilled(false);
-        minimizeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        minimizeBtn.setFocusPainted(false);
-        minimizeBtn.addActionListener(e -> setState(JFrame.ICONIFIED));
+        // Content panel split into left (form) and right (welcome)
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setDividerLocation(550);
+        splitPane.setDividerSize(1);
+        splitPane.setEnabled(false);
+        splitPane.setBorder(null);
         
-        // Close button
-        JButton closeBtn = new JButton("✕");
-        closeBtn.setForeground(ColorScheme.TEXT);
-        closeBtn.setFont(new Font("Arial", Font.BOLD, 12));
-        closeBtn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        closeBtn.setContentAreaFilled(false);
-        closeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        closeBtn.setFocusPainted(false);
-        closeBtn.addActionListener(e -> System.exit(0));
+        // Left panel with form
+        JPanel formPanel = createFormPanel();
         
-        // Hover effects
-        minimizeBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                minimizeBtn.setForeground(ColorScheme.SECONDARY);
-            }
-            
-            @Override
-            public void mouseExited(MouseEvent e) {
-                minimizeBtn.setForeground(ColorScheme.TEXT);
-            }
-        });
+        // Right panel with welcome message
+        JPanel welcomePanel = createWelcomePanel();
         
-        closeBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                closeBtn.setForeground(ColorScheme.ERROR);
-            }
-            
-            @Override
-            public void mouseExited(MouseEvent e) {
-                closeBtn.setForeground(ColorScheme.TEXT);
-            }
-        });
+        splitPane.setLeftComponent(formPanel);
+        splitPane.setRightComponent(welcomePanel);
         
-        controlButtonsPanel.add(minimizeBtn);
-        controlButtonsPanel.add(closeBtn);
+        mainPanel.add(splitPane, BorderLayout.CENTER);
         
-        // Add components to panel
-        panel.add(backButtonPanel, BorderLayout.WEST);
-        panel.add(controlButtonsPanel, BorderLayout.EAST);
-        
-        return panel;
+        // Set as content pane
+        setContentPane(mainPanel);
     }
     
     /**
-     * Create the main form panel
+     * Create the form panel
      */
     private JPanel createFormPanel() {
-        // Main form container
-        JPanel container = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                // Panel background
-                g2d.setColor(ColorScheme.CARD_BG);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-                
-                // Top accent line
-                g2d.setColor(ColorScheme.SECONDARY);
-                g2d.fillRect(0, 0, getWidth(), 3);
-                
-                g2d.dispose();
-            }
-        };
-        container.setLayout(new BorderLayout());
-        container.setBorder(BorderFactory.createEmptyBorder(25, 30, 30, 30));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(new Color(37, 40, 61));
+        panel.setBorder(new EmptyBorder(30, 40, 40, 40));
         
-        // Form title
+        // Title
         JLabel titleLabel = new JLabel("Create New Account");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        titleLabel.setForeground(ColorScheme.SECONDARY);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(titleLabel);
         
         JLabel subtitleLabel = new JLabel("Join the SixStringMarket community");
-        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        subtitleLabel.setForeground(ColorScheme.TEXT_SECONDARY);
+        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subtitleLabel.setForeground(new Color(200, 200, 200));
+        subtitleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(subtitleLabel);
         
-        JPanel titlePanel = new JPanel();
-        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
-        titlePanel.setOpaque(false);
-        titlePanel.add(titleLabel);
-        titlePanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        titlePanel.add(subtitleLabel);
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
-        
-        // Form fields
-        JPanel formPanel = new JPanel();
-        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
-        formPanel.setOpaque(false);
+        panel.add(Box.createRigidArea(new Dimension(0, 30)));
         
         // Username field
-        JPanel usernamePanel = createInputFieldPanel("Username", "*");
-        usernameField = createStyledTextField();
-        usernameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        JPanel usernamePanel = new JPanel();
+        usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.Y_AXIS));
+        usernamePanel.setOpaque(false);
+        usernamePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        usernamePanel.setMaximumSize(new Dimension(470, 90));
+        
+        JLabel usernameLabel = new JLabel("Username *");
+        usernameLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        usernameLabel.setForeground(Color.WHITE);
+        usernamePanel.add(usernameLabel);
+        
+        usernameField = new JTextField();
+        usernameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        usernameField.setPreferredSize(new Dimension(470, 35));
+        usernameField.setMaximumSize(new Dimension(470, 35));
+        
+        // Style the field
+        usernameField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(70, 70, 90), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        usernameField.setBackground(new Color(45, 48, 71));
+        usernameField.setForeground(Color.WHITE);
+        usernameField.setCaretColor(Color.WHITE);
+        
+        // Add validation listener
         usernameField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { validateUsername(); }
@@ -324,18 +202,44 @@ public class RegistrationFrame extends JFrame {
             public void changedUpdate(DocumentEvent e) { validateUsername(); }
         });
         
+        usernamePanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        usernamePanel.add(usernameField);
+        
         usernameValidationLabel = new JLabel(" ");
         usernameValidationLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        usernameValidationLabel.setForeground(ColorScheme.TEXT_SECONDARY);
-        
-        usernamePanel.add(usernameField);
-        usernamePanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        usernameValidationLabel.setForeground(new Color(150, 150, 150));
         usernamePanel.add(usernameValidationLabel);
         
+        panel.add(usernamePanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
         // Password field
-        JPanel passwordPanel = createInputFieldPanel("Password", "*");
-        passwordField = createStyledPasswordField();
-        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        JPanel passwordPanel = new JPanel();
+        passwordPanel.setLayout(new BoxLayout(passwordPanel, BoxLayout.Y_AXIS));
+        passwordPanel.setOpaque(false);
+        passwordPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passwordPanel.setMaximumSize(new Dimension(470, 90));
+        
+        JLabel passwordLabel = new JLabel("Password *");
+        passwordLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        passwordLabel.setForeground(Color.WHITE);
+        passwordPanel.add(passwordLabel);
+        
+        passwordField = new JPasswordField();
+        passwordField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        passwordField.setPreferredSize(new Dimension(470, 35));
+        passwordField.setMaximumSize(new Dimension(470, 35));
+        
+        // Style the field
+        passwordField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(70, 70, 90), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        passwordField.setBackground(new Color(45, 48, 71));
+        passwordField.setForeground(Color.WHITE);
+        passwordField.setCaretColor(Color.WHITE);
+        
+        // Add validation listener
         passwordField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { validatePassword(); }
@@ -345,28 +249,56 @@ public class RegistrationFrame extends JFrame {
             public void changedUpdate(DocumentEvent e) { validatePassword(); }
         });
         
+        passwordPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        passwordPanel.add(passwordField);
+        
         // Password strength bar
         passwordStrengthBar = new JProgressBar(0, 100);
-        passwordStrengthBar.setForeground(ColorScheme.ERROR);
-        passwordStrengthBar.setBackground(ColorScheme.FIELD_BG);
+        passwordStrengthBar.setPreferredSize(new Dimension(470, 3));
+        passwordStrengthBar.setMaximumSize(new Dimension(470, 3));
+        passwordStrengthBar.setBorder(null);
+        passwordStrengthBar.setForeground(new Color(231, 76, 60)); // Start with red
+        passwordStrengthBar.setBackground(new Color(45, 48, 71));
         passwordStrengthBar.setBorderPainted(false);
-        passwordStrengthBar.setStringPainted(false);
-        passwordStrengthBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 5));
+        
+        passwordPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        passwordPanel.add(passwordStrengthBar);
         
         passwordValidationLabel = new JLabel(" ");
         passwordValidationLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        passwordValidationLabel.setForeground(ColorScheme.TEXT_SECONDARY);
-        
-        passwordPanel.add(passwordField);
-        passwordPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        passwordPanel.add(passwordStrengthBar);
-        passwordPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        passwordValidationLabel.setForeground(new Color(150, 150, 150));
         passwordPanel.add(passwordValidationLabel);
         
-        // Confirm password field
-        JPanel confirmPasswordPanel = createInputFieldPanel("Confirm Password", "*");
-        confirmPasswordField = createStyledPasswordField();
-        confirmPasswordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        panel.add(passwordPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        // Confirm Password field
+        JPanel confirmPasswordPanel = new JPanel();
+        confirmPasswordPanel.setLayout(new BoxLayout(confirmPasswordPanel, BoxLayout.Y_AXIS));
+        confirmPasswordPanel.setOpaque(false);
+        confirmPasswordPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        confirmPasswordPanel.setMaximumSize(new Dimension(470, 90));
+        
+        JLabel confirmPasswordLabel = new JLabel("Confirm Password *");
+        confirmPasswordLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        confirmPasswordLabel.setForeground(Color.WHITE);
+        confirmPasswordPanel.add(confirmPasswordLabel);
+        
+        confirmPasswordField = new JPasswordField();
+        confirmPasswordField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        confirmPasswordField.setPreferredSize(new Dimension(470, 35));
+        confirmPasswordField.setMaximumSize(new Dimension(470, 35));
+        
+        // Style the field
+        confirmPasswordField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(70, 70, 90), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        confirmPasswordField.setBackground(new Color(45, 48, 71));
+        confirmPasswordField.setForeground(Color.WHITE);
+        confirmPasswordField.setCaretColor(Color.WHITE);
+        
+        // Add validation listener
         confirmPasswordField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { validateConfirmPassword(); }
@@ -376,18 +308,44 @@ public class RegistrationFrame extends JFrame {
             public void changedUpdate(DocumentEvent e) { validateConfirmPassword(); }
         });
         
+        confirmPasswordPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        confirmPasswordPanel.add(confirmPasswordField);
+        
         confirmPasswordValidationLabel = new JLabel(" ");
         confirmPasswordValidationLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        confirmPasswordValidationLabel.setForeground(ColorScheme.TEXT_SECONDARY);
-        
-        confirmPasswordPanel.add(confirmPasswordField);
-        confirmPasswordPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        confirmPasswordValidationLabel.setForeground(new Color(150, 150, 150));
         confirmPasswordPanel.add(confirmPasswordValidationLabel);
         
+        panel.add(confirmPasswordPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
         // Email field
-        JPanel emailPanel = createInputFieldPanel("Email", "*");
-        emailField = createStyledTextField();
-        emailField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        JPanel emailPanel = new JPanel();
+        emailPanel.setLayout(new BoxLayout(emailPanel, BoxLayout.Y_AXIS));
+        emailPanel.setOpaque(false);
+        emailPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        emailPanel.setMaximumSize(new Dimension(470, 90));
+        
+        JLabel emailLabel = new JLabel("Email *");
+        emailLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        emailLabel.setForeground(Color.WHITE);
+        emailPanel.add(emailLabel);
+        
+        emailField = new JTextField();
+        emailField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        emailField.setPreferredSize(new Dimension(470, 35));
+        emailField.setMaximumSize(new Dimension(470, 35));
+        
+        // Style the field
+        emailField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(70, 70, 90), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        emailField.setBackground(new Color(45, 48, 71));
+        emailField.setForeground(Color.WHITE);
+        emailField.setCaretColor(Color.WHITE);
+        
+        // Add validation listener
         emailField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { validateEmail(); }
@@ -397,181 +355,171 @@ public class RegistrationFrame extends JFrame {
             public void changedUpdate(DocumentEvent e) { validateEmail(); }
         });
         
+        emailPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        emailPanel.add(emailField);
+        
         emailValidationLabel = new JLabel(" ");
         emailValidationLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        emailValidationLabel.setForeground(ColorScheme.TEXT_SECONDARY);
-        
-        emailPanel.add(emailField);
-        emailPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        emailValidationLabel.setForeground(new Color(150, 150, 150));
         emailPanel.add(emailValidationLabel);
         
+        panel.add(emailPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
         // Phone field (optional)
-        JPanel phonePanel = createInputFieldPanel("Phone", "optional");
-        phoneField = createStyledTextField();
-        phoneField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        JPanel phonePanel = new JPanel();
+        phonePanel.setLayout(new BoxLayout(phonePanel, BoxLayout.Y_AXIS));
+        phonePanel.setOpaque(false);
+        phonePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        phonePanel.setMaximumSize(new Dimension(470, 75));
         
-        JLabel phoneFormatLabel = new JLabel("Example: 0885123456");
-        phoneFormatLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        phoneFormatLabel.setForeground(ColorScheme.TEXT_SECONDARY);
+        JLabel phoneLabel = new JLabel("Phone (optional)");
+        phoneLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        phoneLabel.setForeground(Color.WHITE);
+        phonePanel.add(phoneLabel);
         
-        phonePanel.add(phoneField);
+        phoneField = new JTextField();
+        phoneField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        phoneField.setPreferredSize(new Dimension(470, 35));
+        phoneField.setMaximumSize(new Dimension(470, 35));
+        
+        // Style the field
+        phoneField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(70, 70, 90), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        phoneField.setBackground(new Color(45, 48, 71));
+        phoneField.setForeground(Color.WHITE);
+        phoneField.setCaretColor(Color.WHITE);
+        
         phonePanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        phonePanel.add(phoneFormatLabel);
+        phonePanel.add(phoneField);
+        
+        JLabel phoneHintLabel = new JLabel("Example: 0885123456");
+        phoneHintLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        phoneHintLabel.setForeground(new Color(150, 150, 150));
+        phonePanel.add(phoneHintLabel);
+        
+        panel.add(phonePanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
         
         // Address field (optional)
-        JPanel addressPanel = createInputFieldPanel("Address", "optional");
+        JPanel addressPanel = new JPanel();
+        addressPanel.setLayout(new BoxLayout(addressPanel, BoxLayout.Y_AXIS));
+        addressPanel.setOpaque(false);
+        addressPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        addressPanel.setMaximumSize(new Dimension(470, 120));
+        
+        JLabel addressLabel = new JLabel("Address (optional)");
+        addressLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        addressLabel.setForeground(Color.WHITE);
+        addressPanel.add(addressLabel);
+        
         addressArea = new JTextArea();
         addressArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        addressArea.setBackground(ColorScheme.FIELD_BG);
-        addressArea.setForeground(ColorScheme.TEXT);
-        addressArea.setCaretColor(ColorScheme.TEXT);
         addressArea.setLineWrap(true);
         addressArea.setWrapStyleWord(true);
+        addressArea.setRows(3);
+        
+        // Style the field
         addressArea.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
-            BorderFactory.createEmptyBorder(8, 8, 8, 8)
+            BorderFactory.createLineBorder(new Color(70, 70, 90), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
         ));
+        addressArea.setBackground(new Color(45, 48, 71));
+        addressArea.setForeground(Color.WHITE);
+        addressArea.setCaretColor(Color.WHITE);
         
         JScrollPane addressScrollPane = new JScrollPane(addressArea);
-        addressScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+        addressScrollPane.setPreferredSize(new Dimension(470, 80));
+        addressScrollPane.setMaximumSize(new Dimension(470, 80));
+        addressScrollPane.setBorder(null);
         
+        addressPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         addressPanel.add(addressScrollPane);
         
+        panel.add(addressPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
         // Register button
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        buttonPanel.setOpaque(false);
+        buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonPanel.setMaximumSize(new Dimension(470, 50));
+        
         registerButton = new JButton("Create Account");
         registerButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        registerButton.setBackground(ColorScheme.SECONDARY);
+        registerButton.setPreferredSize(new Dimension(200, 40));
+        
+        // Style the button
+        registerButton.setBackground(new Color(186, 80, 80)); // Red accent color
         registerButton.setForeground(Color.WHITE);
         registerButton.setFocusPainted(false);
         registerButton.setBorderPainted(false);
         registerButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        registerButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        registerButton.setMaximumSize(new Dimension(200, 40));
-        registerButton.addActionListener(e -> register());
         
-        // Button hover effect
+        // Hover effects
         registerButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                registerButton.setBackground(ColorScheme.lighten(ColorScheme.SECONDARY, 0.1f));
+                registerButton.setBackground(new Color(200, 90, 90)); // Lighter
             }
             
             @Override
             public void mouseExited(MouseEvent e) {
-                registerButton.setBackground(ColorScheme.SECONDARY);
+                registerButton.setBackground(new Color(186, 80, 80)); // Original
             }
         });
         
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        buttonPanel.setOpaque(false);
+        registerButton.addActionListener(e -> register());
+        
         buttonPanel.add(registerButton);
+        panel.add(buttonPanel);
         
-        // Add all components to form
-        formPanel.add(usernamePanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        formPanel.add(passwordPanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        formPanel.add(confirmPasswordPanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        formPanel.add(emailPanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        formPanel.add(phonePanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        formPanel.add(addressPanel);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        formPanel.add(buttonPanel);
-        
-        // Required fields note
-        JLabel requiredFieldsNote = new JLabel("* Required fields");
-        requiredFieldsNote.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        requiredFieldsNote.setForeground(ColorScheme.TEXT_SECONDARY);
-        
-        // Add everything to container
-        container.add(titlePanel, BorderLayout.NORTH);
-        container.add(formPanel, BorderLayout.CENTER);
-        container.add(requiredFieldsNote, BorderLayout.SOUTH);
-        
-        return container;
+        return panel;
     }
     
     /**
-     * Create welcome panel with guitar image and text
+     * Create welcome panel
      */
     private JPanel createWelcomePanel() {
-        JPanel panel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                // Create gradient background for welcome panel
-                GradientPaint gradient = new GradientPaint(
-                    0, 0, ColorScheme.SECONDARY,
-                    0, getHeight(), ColorScheme.darken(ColorScheme.SECONDARY, 0.3f)
-                );
-                g2d.setPaint(gradient);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-                
-                g2d.dispose();
-            }
-        };
-        panel.setLayout(new BorderLayout());
-        panel.setPreferredSize(new Dimension(300, 0));
+        JPanel panel = new JPanel(new BorderLayout());
         
-        // Content panel with welcome text
+        // Create a solid color background (accent red)
+        panel.setBackground(new Color(186, 80, 80));
+        panel.setBorder(new EmptyBorder(30, 40, 40, 40));
+        
+        // Content panel
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setOpaque(false);
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(40, 30, 40, 30));
         
-        // Logo/guitar icon
-        JLabel logoLabel = new JLabel() {
+        // Guitar icon (can be replaced with an actual icon if available)
+        JLabel iconLabel = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Draw simplified guitar in white
+                // Draw a simplified guitar icon in white
                 g2d.setColor(Color.WHITE);
                 
-                // Body
-                g2d.fillOval(25, 40, 50, 60);
+                // Guitar body
+                g2d.fillOval(10, 30, 50, 70);
                 
-                // Neck
-                g2d.fillRect(45, 10, 10, 40);
-                
-                // Sound hole
-                g2d.setColor(ColorScheme.SECONDARY);
-                g2d.fillOval(35, 55, 30, 30);
-                
-                // Strings
-                g2d.setColor(Color.WHITE);
-                g2d.setStroke(new BasicStroke(1.0f));
-                for (int i = 0; i < 6; i++) {
-                    g2d.drawLine(47, 15 + i * 3, 53, 15 + i * 3);
-                }
+                // Guitar neck
+                g2d.fillRect(32, 0, 6, 40);
                 
                 g2d.dispose();
             }
             
             @Override
             public Dimension getPreferredSize() {
-                return new Dimension(100, 100);
-            }
-            
-            @Override
-            public Dimension getMinimumSize() {
-                return getPreferredSize();
-            }
-            
-            @Override
-            public Dimension getMaximumSize() {
-                return getPreferredSize();
+                return new Dimension(70, 100);
             }
         };
-        logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         // Welcome text
         JLabel welcomeLabel = new JLabel("Welcome to");
@@ -580,11 +528,23 @@ public class RegistrationFrame extends JFrame {
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JLabel appNameLabel = new JLabel("SixStringMarket");
-        appNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        appNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         appNameLabel.setForeground(Color.WHITE);
         appNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Benefits list
+        contentPanel.add(Box.createVerticalGlue());
+        contentPanel.add(iconLabel);
+        contentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        contentPanel.add(welcomeLabel);
+        contentPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        contentPanel.add(appNameLabel);
+        contentPanel.add(Box.createRigidArea(new Dimension(0, 50)));
+        
+        // Benefits
+        JPanel benefitsPanel = new JPanel();
+        benefitsPanel.setLayout(new BoxLayout(benefitsPanel, BoxLayout.Y_AXIS));
+        benefitsPanel.setOpaque(false);
+        
         String[] benefits = {
             "Buy and sell guitars easily",
             "Connect with other musicians",
@@ -593,182 +553,31 @@ public class RegistrationFrame extends JFrame {
             "Join our growing community"
         };
         
-        JPanel benefitsPanel = new JPanel();
-        benefitsPanel.setLayout(new BoxLayout(benefitsPanel, BoxLayout.Y_AXIS));
-        benefitsPanel.setOpaque(false);
-        benefitsPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
-        
         for (String benefit : benefits) {
-            JPanel itemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            itemPanel.setOpaque(false);
+            JPanel benefitRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            benefitRow.setOpaque(false);
             
-            JLabel iconLabel = new JLabel("✓");
-            iconLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-            iconLabel.setForeground(Color.WHITE);
+            JLabel checkmark = new JLabel("✓");
+            checkmark.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            checkmark.setForeground(Color.WHITE);
             
-            JLabel textLabel = new JLabel(benefit);
-            textLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            textLabel.setForeground(Color.WHITE);
+            JLabel benefitText = new JLabel(benefit);
+            benefitText.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            benefitText.setForeground(Color.WHITE);
             
-            itemPanel.add(iconLabel);
-            itemPanel.add(textLabel);
+            benefitRow.add(checkmark);
+            benefitRow.add(benefitText);
             
-            benefitsPanel.add(itemPanel);
+            benefitsPanel.add(benefitRow);
+            benefitsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         }
         
-        contentPanel.add(Box.createVerticalGlue());
-        contentPanel.add(logoLabel);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        contentPanel.add(welcomeLabel);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        contentPanel.add(appNameLabel);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 40)));
         contentPanel.add(benefitsPanel);
         contentPanel.add(Box.createVerticalGlue());
         
         panel.add(contentPanel, BorderLayout.CENTER);
         
         return panel;
-    }
-    
-    /**
-     * Create a styled text field with visual enhancements
-     */
-    private JTextField createStyledTextField() {
-        JTextField field = new JTextField();
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
-            BorderFactory.createEmptyBorder(8, 8, 8, 8)
-        ));
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBackground(ColorScheme.FIELD_BG);
-        field.setForeground(ColorScheme.TEXT);
-        field.setCaretColor(ColorScheme.TEXT);
-        
-        // Add focus effect
-        field.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(ColorScheme.SECONDARY),
-                    BorderFactory.createEmptyBorder(8, 8, 8, 8)
-                ));
-            }
-            
-            @Override
-            public void focusLost(FocusEvent e) {
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
-                    BorderFactory.createEmptyBorder(8, 8, 8, 8)
-                ));
-            }
-        });
-        
-        return field;
-    }
-    
-    /**
-     * Create a styled password field with visual enhancements
-     */
-    private JPasswordField createStyledPasswordField() {
-        JPasswordField field = new JPasswordField();
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
-            BorderFactory.createEmptyBorder(8, 8, 8, 8)
-        ));
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBackground(ColorScheme.FIELD_BG);
-        field.setForeground(ColorScheme.TEXT);
-        field.setCaretColor(ColorScheme.TEXT);
-        
-        // Add focus effect
-        field.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(ColorScheme.SECONDARY),
-                    BorderFactory.createEmptyBorder(8, 8, 8, 8)
-                ));
-            }
-            
-            @Override
-            public void focusLost(FocusEvent e) {
-                field.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
-                    BorderFactory.createEmptyBorder(8, 8, 8, 8)
-                ));
-            }
-        });
-        
-        return field;
-    }
-    
-    /**
-     * Create a panel for input field with label
-     */
-    private JPanel createInputFieldPanel(String labelText, String required) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setOpaque(false);
-        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        // Label text
-        JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        labelPanel.setOpaque(false);
-        
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        label.setForeground(ColorScheme.TEXT);
-        labelPanel.add(label);
-        
-        // Required indicator
-        if (required != null) {
-            JLabel requiredLabel = new JLabel(" (" + required + ")");
-            requiredLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-            
-            if (required.equals("*")) {
-                requiredLabel.setForeground(ColorScheme.SECONDARY);
-            } else {
-                requiredLabel.setForeground(ColorScheme.TEXT_SECONDARY);
-            }
-            
-            labelPanel.add(requiredLabel);
-        }
-        
-        panel.add(labelPanel);
-        panel.add(Box.createRigidArea(new Dimension(0, 5)));
-        
-        return panel;
-    }
-    
-    /**
-     * Setup draggable functionality to move the window
-     */
-    private void setupDragSupport() {
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                initialClick = e.getPoint();
-            }
-        });
-        
-        addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                // Get current location of the frame
-                int thisX = getLocation().x;
-                int thisY = getLocation().y;
-                
-                // Determine how much the mouse moved
-                int xMoved = e.getX() - initialClick.x;
-                int yMoved = e.getY() - initialClick.y;
-                
-                // Move window to this position
-                int newX = thisX + xMoved;
-                int newY = thisY + yMoved;
-                setLocation(newX, newY);
-            }
-        });
     }
     
     /**
@@ -784,22 +593,22 @@ public class RegistrationFrame extends JFrame {
         
         if (username.length() < 4) {
             usernameValidationLabel.setText("Username must be at least 4 characters long");
-            usernameValidationLabel.setForeground(ColorScheme.ERROR);
+            usernameValidationLabel.setForeground(new Color(231, 76, 60)); // Red
             return;
         }
         
         // Check if username is available
         if (userService.isUsernameTaken(username)) {
             usernameValidationLabel.setText("This username is already taken");
-            usernameValidationLabel.setForeground(ColorScheme.ERROR);
+            usernameValidationLabel.setForeground(new Color(231, 76, 60)); // Red
         } else {
             usernameValidationLabel.setText("This username is available");
-            usernameValidationLabel.setForeground(ColorScheme.SUCCESS);
+            usernameValidationLabel.setForeground(new Color(46, 204, 113)); // Green
         }
     }
     
     /**
-     * Validate password and show strength indicator
+     * Validate password and update strength indicator
      */
     private void validatePassword() {
         String password = new String(passwordField.getPassword());
@@ -814,19 +623,19 @@ public class RegistrationFrame extends JFrame {
         int strength = ValidationUtils.calculatePasswordStrength(password);
         passwordStrengthBar.setValue(strength);
         
-        // Update strength indicator color and text
+        // Update color based on strength
         if (strength < 30) {
-            passwordStrengthBar.setForeground(ColorScheme.ERROR);
+            passwordStrengthBar.setForeground(new Color(231, 76, 60)); // Red
             passwordValidationLabel.setText("Weak password");
-            passwordValidationLabel.setForeground(ColorScheme.ERROR);
+            passwordValidationLabel.setForeground(new Color(231, 76, 60)); // Red
         } else if (strength < 60) {
-            passwordStrengthBar.setForeground(ColorScheme.WARNING);
+            passwordStrengthBar.setForeground(new Color(230, 126, 34)); // Orange
             passwordValidationLabel.setText("Medium strength password");
-            passwordValidationLabel.setForeground(ColorScheme.WARNING);
+            passwordValidationLabel.setForeground(new Color(230, 126, 34)); // Orange
         } else {
-            passwordStrengthBar.setForeground(ColorScheme.SUCCESS);
+            passwordStrengthBar.setForeground(new Color(46, 204, 113)); // Green
             passwordValidationLabel.setText("Strong password");
-            passwordValidationLabel.setForeground(ColorScheme.SUCCESS);
+            passwordValidationLabel.setForeground(new Color(46, 204, 113)); // Green
         }
         
         // Also validate confirm password if it's not empty
@@ -849,10 +658,10 @@ public class RegistrationFrame extends JFrame {
         
         if (!password.equals(confirmPassword)) {
             confirmPasswordValidationLabel.setText("Passwords don't match");
-            confirmPasswordValidationLabel.setForeground(ColorScheme.ERROR);
+            confirmPasswordValidationLabel.setForeground(new Color(231, 76, 60)); // Red
         } else {
             confirmPasswordValidationLabel.setText("Passwords match");
-            confirmPasswordValidationLabel.setForeground(ColorScheme.SUCCESS);
+            confirmPasswordValidationLabel.setForeground(new Color(46, 204, 113)); // Green
         }
     }
     
@@ -869,21 +678,24 @@ public class RegistrationFrame extends JFrame {
         
         if (!ValidationUtils.isValidEmail(email)) {
             emailValidationLabel.setText("Please enter a valid email address");
-            emailValidationLabel.setForeground(ColorScheme.ERROR);
+            emailValidationLabel.setForeground(new Color(231, 76, 60)); // Red
         } else {
             emailValidationLabel.setText("Valid email address");
-            emailValidationLabel.setForeground(ColorScheme.SUCCESS);
+            emailValidationLabel.setForeground(new Color(46, 204, 113)); // Green
         }
     }
     
     /**
-     * Go back to login screen
+     * Navigate back to login screen
      */
     private void backToLogin() {
         dispose();
         new LoginFrame().setVisible(true);
     }
     
+    /**
+     * Register new user
+     */
     /**
      * Register new user
      */
@@ -953,8 +765,6 @@ public class RegistrationFrame extends JFrame {
         SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
             @Override
             protected Boolean doInBackground() throws Exception {
-                // Small delay for better UX
-                Thread.sleep(800);
                 try {
                     return userService.registerUser(username, password, email, phone, address);
                 } catch (IllegalArgumentException e) {
@@ -969,7 +779,7 @@ public class RegistrationFrame extends JFrame {
                     boolean success = get();
                     
                     if (success) {
-                        showSuccessDialog("Your account has been created successfully!", "Registration Complete");
+                        showSuccessDialog();
                         backToLogin();
                     } else {
                         registerButton.setEnabled(true);
@@ -998,22 +808,22 @@ public class RegistrationFrame extends JFrame {
         dialog.setLayout(new BorderLayout());
         
         JPanel panel = new JPanel(new BorderLayout(15, 15));
-        panel.setBackground(ColorScheme.CARD_BG);
+        panel.setBackground(new Color(45, 48, 71));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        JLabel iconLabel = new JLabel("!");
+        JLabel iconLabel = new JLabel("⚠");
         iconLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        iconLabel.setForeground(ColorScheme.ERROR);
+        iconLabel.setForeground(new Color(231, 76, 60)); // Red
         iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         iconLabel.setPreferredSize(new Dimension(40, 40));
         
-        JLabel messageLabel = new JLabel(message);
+        JLabel messageLabel = new JLabel("<html>" + message + "</html>");
         messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        messageLabel.setForeground(ColorScheme.TEXT);
+        messageLabel.setForeground(Color.WHITE);
         
         JButton okButton = new JButton("OK");
         okButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        okButton.setBackground(ColorScheme.SECONDARY);
+        okButton.setBackground(new Color(186, 80, 80)); // Accent color
         okButton.setForeground(Color.WHITE);
         okButton.setBorderPainted(false);
         okButton.setFocusPainted(false);
@@ -1034,29 +844,29 @@ public class RegistrationFrame extends JFrame {
     /**
      * Show success dialog
      */
-    private void showSuccessDialog(String message, String title) {
-        JDialog dialog = new JDialog(this, title, true);
+    private void showSuccessDialog() {
+        JDialog dialog = new JDialog(this, "Registration Successful", true);
         dialog.setSize(400, 150);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout());
         
         JPanel panel = new JPanel(new BorderLayout(15, 15));
-        panel.setBackground(ColorScheme.CARD_BG);
+        panel.setBackground(new Color(45, 48, 71));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
         JLabel iconLabel = new JLabel("✓");
         iconLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        iconLabel.setForeground(ColorScheme.SUCCESS);
+        iconLabel.setForeground(new Color(46, 204, 113)); // Green
         iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
         iconLabel.setPreferredSize(new Dimension(40, 40));
         
-        JLabel messageLabel = new JLabel(message);
+        JLabel messageLabel = new JLabel("<html>Your account has been created successfully!<br>You can now login.</html>");
         messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        messageLabel.setForeground(ColorScheme.TEXT);
+        messageLabel.setForeground(Color.WHITE);
         
         JButton okButton = new JButton("OK");
         okButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        okButton.setBackground(ColorScheme.SECONDARY);
+        okButton.setBackground(new Color(186, 80, 80)); // Accent color
         okButton.setForeground(Color.WHITE);
         okButton.setBorderPainted(false);
         okButton.setFocusPainted(false);
@@ -1072,5 +882,21 @@ public class RegistrationFrame extends JFrame {
         
         dialog.add(panel);
         dialog.setVisible(true);
+    }
+    
+    /**
+     * Main method for testing the registration form
+     */
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                // Set system look and feel
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            new RegistrationFrame().setVisible(true);
+        });
     }
 }
