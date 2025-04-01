@@ -10,24 +10,15 @@ import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Modern login screen with animations, subtle guitar-themed design elements,
- * and intuitive, user-friendly interaction
+ * Enhanced modern login screen with sleek design and animations
  */
 public class LoginFrame extends JFrame {
     
-    // UI Components
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
     private JButton registerButton;
     private JLabel statusLabel;
-    
-    // Animation components
-    private Timer fadeTimer;
-    private Timer shakeTimer;
-    
-    // Initial mouse position for dragging
-    private Point initialClick;
     
     /**
      * Constructor
@@ -36,27 +27,16 @@ public class LoginFrame extends JFrame {
         // Window settings
         setTitle("SixStringMarket - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(420, 600);
+        setSize(550, 650); // Increased width and height
         setLocationRelativeTo(null);
         setResizable(false);
         setUndecorated(true);
         
         // Initialize components
-        try {
-            initComponents();
-            setupDragSupport();
-            
-            // Set rounded corners
-            setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null,
-                "Error initializing login screen: " + e.getMessage(),
-                "Initialization Error",
-                JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
-        }
+        initComponents();
+        
+        // Add shadow border and rounded corners
+        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
         
         // Focus on username field
         SwingUtilities.invokeLater(() -> usernameField.requestFocusInWindow());
@@ -66,7 +46,7 @@ public class LoginFrame extends JFrame {
      * Initialize UI components
      */
     private void initComponents() {
-        // Main background panel with gradient and guitar silhouettes
+        // Main background panel with gradient
         JPanel backgroundPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -82,66 +62,52 @@ public class LoginFrame extends JFrame {
                 g2d.setPaint(gradient);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 
-                // Draw decorative guitar silhouettes
-                drawGuitarDecorations(g2d);
-                
+                // Draw decorative guitar silhouette
+                drawGuitarSilhouette(g2d);
                 g2d.dispose();
             }
             
-            private void drawGuitarDecorations(Graphics2D g2d) {
-                g2d.setColor(new Color(255, 255, 255, 15)); // Very subtle white
+            private void drawGuitarSilhouette(Graphics2D g2d) {
+                g2d.setColor(new Color(255, 255, 255, 12)); // Very subtle white
                 
-                // Bottom right large guitar
-                drawGuitar(g2d, getWidth() - 100, getHeight() - 130, 180);
+                // Draw simplified guitar in bottom right
+                int x = getWidth() - 120;
+                int y = getHeight() - 100;
+                int size = 220;
                 
-                // Top left small guitar
-                drawGuitar(g2d, 80, 150, 100);
-                
-                // Musical notes
-                g2d.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 20));
-                g2d.drawString("♪", 50, 400);
-                g2d.drawString("♫", 350, 200);
-                g2d.drawString("♪", 280, 450);
-                
-                // Decorative strings/waves
-                g2d.setStroke(new BasicStroke(1.0f));
-                for (int i = 1; i <= 5; i++) {
-                    int y = getHeight() - 100 + i * 15;
-                    
-                    // Create curved strings with sine wave
-                    for (int x = 0; x < getWidth(); x += 2) {
-                        int y1 = (int)(y + 5 * Math.sin(x * 0.03 + i));
-                        int y2 = (int)(y + 5 * Math.sin((x+2) * 0.03 + i));
-                        g2d.drawLine(x, y1, x+2, y2);
-                    }
-                }
-            }
-            
-            private void drawGuitar(Graphics2D g2d, int x, int y, int size) {
-                // Draw guitar body (oval)
+                // Guitar body (oval)
                 int bodyWidth = size/2;
                 int bodyHeight = (int) (size/1.5f);
                 g2d.fillOval(x - bodyWidth/2, y - bodyHeight/2, bodyWidth, bodyHeight);
                 
-                // Draw guitar neck (rectangle)
+                // Guitar neck (rectangle)
                 int neckWidth = size/8;
                 int neckHeight = size/2;
                 g2d.fillRect(x - neckWidth/2, y - bodyHeight/2 - neckHeight, neckWidth, neckHeight);
                 
-                // Draw guitar head (small rectangle)
+                // Guitar head (small rectangle)
                 int headWidth = size/6;
                 int headHeight = size/10;
                 g2d.fillRect(x - headWidth/2, y - bodyHeight/2 - neckHeight - headHeight, headWidth, headHeight);
+                
+                // Draw some music notes
+                g2d.setFont(new Font("SansSerif", Font.PLAIN, 24));
+                g2d.drawString("♪", 100, 150);
+                g2d.drawString("♫", 300, 250);
+                g2d.drawString("♬", 180, 500);
             }
         };
         backgroundPanel.setLayout(new BorderLayout());
         
-        // Window controls panel
+        // Window controls (close/minimize buttons)
         JPanel controlsPanel = createWindowControlsPanel();
         backgroundPanel.add(controlsPanel, BorderLayout.NORTH);
         
         // Login form panel
         JPanel loginFormPanel = createLoginFormPanel();
+        
+        // Add draggable behavior to form panel
+        addDragSupport(loginFormPanel);
         
         // Center the login panel
         JPanel centerPanel = new JPanel(new GridBagLayout());
@@ -161,18 +127,18 @@ public class LoginFrame extends JFrame {
         panel.setOpaque(false);
         
         // Minimize button
-        JButton minimizeBtn = new JButton("—");
+        JButton minimizeBtn = new JButton("_");
         minimizeBtn.setForeground(ColorScheme.TEXT);
-        minimizeBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        minimizeBtn.setFont(new Font("SansSerif", Font.PLAIN, 18));
         minimizeBtn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         minimizeBtn.setContentAreaFilled(false);
         minimizeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         minimizeBtn.setFocusPainted(false);
         
         // Close button
-        JButton closeBtn = new JButton("✕");
+        JButton closeBtn = new JButton("X");
         closeBtn.setForeground(ColorScheme.TEXT);
-        closeBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        closeBtn.setFont(new Font("SansSerif", Font.PLAIN, 18));
         closeBtn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         closeBtn.setContentAreaFilled(false);
         closeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -217,7 +183,7 @@ public class LoginFrame extends JFrame {
      * Create the main login form panel
      */
     private JPanel createLoginFormPanel() {
-        // Card panel with modern styling
+        // Main container with modern styling
         JPanel loginPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -237,45 +203,65 @@ public class LoginFrame extends JFrame {
                 g2d.setPaint(topHighlight);
                 g2d.fillRoundRect(0, 0, getWidth(), 40, 20, 20);
                 
-                // Add subtle accent line
+                // Add accent line
                 g2d.setColor(ColorScheme.SECONDARY);
                 g2d.fillRect(0, 70, getWidth(), 2);
+                
+                g2d.dispose();
             }
         };
         
         loginPanel.setLayout(new BoxLayout(loginPanel, BoxLayout.Y_AXIS));
         loginPanel.setOpaque(false);
         loginPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 30, 30));
-        loginPanel.setPreferredSize(new Dimension(340, 500));
+        loginPanel.setPreferredSize(new Dimension(500, 550)); // Adjusted height
+        
+        // Create a centered container for the logo and title
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        headerPanel.setOpaque(false);
+        headerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         // Logo and app name
         JLabel logoLabel = createLogoLabel();
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JLabel titleLabel = new JLabel("SixStringMarket");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 28)); // Larger font
         titleLabel.setForeground(ColorScheme.SECONDARY);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JLabel subtitleLabel = new JLabel("Guitar Trading Marketplace");
-        subtitleLabel.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        subtitleLabel.setFont(new Font("SansSerif", Font.ITALIC, 16)); // Larger font
         subtitleLabel.setForeground(ColorScheme.TEXT_SECONDARY);
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Login form
+        headerPanel.add(logoLabel);
+        headerPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        headerPanel.add(titleLabel);
+        headerPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        headerPanel.add(subtitleLabel);
+        
+        // Create a panel for the form elements
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setOpaque(false);
+        formPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Login header
         JLabel loginHeaderLabel = new JLabel("Sign In");
-        loginHeaderLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        loginHeaderLabel.setFont(new Font("SansSerif", Font.BOLD, 22)); // Larger font
         loginHeaderLabel.setForeground(ColorScheme.TEXT);
-        loginHeaderLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        loginHeaderLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center aligned
         
         // Username field with icon
         JPanel usernamePanel = new JPanel(new BorderLayout(8, 0));
         usernamePanel.setOpaque(false);
-        usernamePanel.setMaximumSize(new Dimension(300, 70));
-        usernamePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        usernamePanel.setMaximumSize(new Dimension(400, 70)); // Wider field
+        usernamePanel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center aligned
         
-        JLabel userIcon = new JLabel("👤");  // Using emoji for simplicity
-        userIcon.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        JLabel userIcon = new JLabel("👤");
+        userIcon.setFont(new Font("SansSerif", Font.PLAIN, 18)); // Larger icon
         userIcon.setForeground(ColorScheme.TEXT);
         
         usernameField = createStyledTextField("Username");
@@ -287,22 +273,14 @@ public class LoginFrame extends JFrame {
         // Password field with icon
         JPanel passwordPanel = new JPanel(new BorderLayout(8, 0));
         passwordPanel.setOpaque(false);
-        passwordPanel.setMaximumSize(new Dimension(300, 70));
-        passwordPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passwordPanel.setMaximumSize(new Dimension(400, 70)); // Wider field
+        passwordPanel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center aligned
         
-        JLabel passwordIcon = new JLabel("🔒");  // Using emoji for simplicity
-        passwordIcon.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        JLabel passwordIcon = new JLabel("🔒");
+        passwordIcon.setFont(new Font("SansSerif", Font.PLAIN, 18)); // Larger icon
         passwordIcon.setForeground(ColorScheme.TEXT);
         
         passwordField = createStyledPasswordField("Password");
-        passwordField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    performLogin();
-                }
-            }
-        });
         
         passwordPanel.add(createFieldHeaderLabel("Password"), BorderLayout.NORTH);
         passwordPanel.add(passwordIcon, BorderLayout.WEST);
@@ -310,26 +288,26 @@ public class LoginFrame extends JFrame {
         
         // Status message label (for errors)
         statusLabel = new JLabel(" ");  // Empty space to reserve height
-        statusLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        statusLabel.setFont(new Font("SansSerif", Font.ITALIC, 14)); // Larger font
         statusLabel.setForeground(ColorScheme.ERROR);
-        statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT); // Center aligned
         
         // Login button
         loginButton = new JButton("Sign In");
-        loginButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        loginButton.setFont(new Font("SansSerif", Font.BOLD, 16)); // Larger font
         loginButton.setForeground(Color.WHITE);
         loginButton.setBackground(ColorScheme.BUTTON_PRIMARY);
         loginButton.setFocusPainted(false);
         loginButton.setBorderPainted(false);
         loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        loginButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        loginButton.setMaximumSize(new Dimension(300, 40));
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center aligned
+        loginButton.setMaximumSize(new Dimension(400, 45)); // Wider and taller button
         
         // Button hover effect
         loginButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                loginButton.setBackground(ColorScheme.lighten(ColorScheme.BUTTON_PRIMARY, 0.1f));
+                loginButton.setBackground(lighten(ColorScheme.BUTTON_PRIMARY, 0.1f));
             }
             
             @Override
@@ -341,15 +319,25 @@ public class LoginFrame extends JFrame {
         // Login action
         loginButton.addActionListener(e -> performLogin());
         
+        // Also login on Enter key in password field
+        passwordField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    performLogin();
+                }
+            }
+        });
+        
         // Register link
         registerButton = new JButton("Don't have an account? Create one");
-        registerButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        registerButton.setFont(new Font("SansSerif", Font.PLAIN, 14)); // Larger font
         registerButton.setForeground(ColorScheme.TEXT_SECONDARY);
         registerButton.setBorderPainted(false);
         registerButton.setContentAreaFilled(false);
         registerButton.setFocusPainted(false);
         registerButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        registerButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        registerButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center aligned
         
         // Hover effect for register button
         registerButton.addMouseListener(new MouseAdapter() {
@@ -368,24 +356,23 @@ public class LoginFrame extends JFrame {
         
         registerButton.addActionListener(e -> openRegistrationForm());
         
-        // Add all components to panel
-        loginPanel.add(logoLabel);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        loginPanel.add(titleLabel);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        loginPanel.add(subtitleLabel);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, 40)));
-        loginPanel.add(loginHeaderLabel);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        loginPanel.add(usernamePanel);
+        // Add components to form panel with reduced spacing
+        formPanel.add(loginHeaderLabel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        formPanel.add(usernamePanel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        formPanel.add(passwordPanel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        formPanel.add(statusLabel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        formPanel.add(loginButton);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        formPanel.add(registerButton);
+        
+        // Add header and form to main panel with reduced spacing
+        loginPanel.add(headerPanel);
         loginPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        loginPanel.add(passwordPanel);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        loginPanel.add(statusLabel);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, 25)));
-        loginPanel.add(loginButton);
-        loginPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        loginPanel.add(registerButton);
+        loginPanel.add(formPanel);
         
         return loginPanel;
     }
@@ -394,12 +381,12 @@ public class LoginFrame extends JFrame {
      * Create a styled text field with visual enhancements
      */
     private JTextField createStyledTextField(String placeholder) {
-        JTextField field = new JTextField(15);
+        JTextField field = new JTextField(20); // Wider field
         field.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 2, 0, ColorScheme.FIELD_BORDER),
-            BorderFactory.createEmptyBorder(8, 8, 8, 8)
+            BorderFactory.createEmptyBorder(10, 10, 10, 10) // More padding
         ));
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setFont(new Font("SansSerif", Font.PLAIN, 16)); // Larger font
         field.setBackground(ColorScheme.FIELD_BG);
         field.setForeground(ColorScheme.TEXT);
         field.setCaretColor(ColorScheme.TEXT);
@@ -411,7 +398,7 @@ public class LoginFrame extends JFrame {
             public void focusGained(FocusEvent e) {
                 field.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 2, 0, ColorScheme.SECONDARY),
-                    BorderFactory.createEmptyBorder(8, 8, 8, 8)
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
                 ));
             }
             
@@ -419,7 +406,7 @@ public class LoginFrame extends JFrame {
             public void focusLost(FocusEvent e) {
                 field.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 2, 0, ColorScheme.FIELD_BORDER),
-                    BorderFactory.createEmptyBorder(8, 8, 8, 8)
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
                 ));
             }
         });
@@ -431,12 +418,12 @@ public class LoginFrame extends JFrame {
      * Create a styled password field with visual enhancements
      */
     private JPasswordField createStyledPasswordField(String placeholder) {
-        JPasswordField field = new JPasswordField(15);
+        JPasswordField field = new JPasswordField(20); // Wider field
         field.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 2, 0, ColorScheme.FIELD_BORDER),
-            BorderFactory.createEmptyBorder(8, 8, 8, 8)
+            BorderFactory.createEmptyBorder(10, 10, 10, 10) // More padding
         ));
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setFont(new Font("SansSerif", Font.PLAIN, 16)); // Larger font
         field.setBackground(ColorScheme.FIELD_BG);
         field.setForeground(ColorScheme.TEXT);
         field.setCaretColor(ColorScheme.TEXT);
@@ -448,7 +435,7 @@ public class LoginFrame extends JFrame {
             public void focusGained(FocusEvent e) {
                 field.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 2, 0, ColorScheme.SECONDARY),
-                    BorderFactory.createEmptyBorder(8, 8, 8, 8)
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
                 ));
             }
             
@@ -456,7 +443,7 @@ public class LoginFrame extends JFrame {
             public void focusLost(FocusEvent e) {
                 field.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 2, 0, ColorScheme.FIELD_BORDER),
-                    BorderFactory.createEmptyBorder(8, 8, 8, 8)
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
                 ));
             }
         });
@@ -469,7 +456,7 @@ public class LoginFrame extends JFrame {
      */
     private JLabel createFieldHeaderLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        label.setFont(new Font("SansSerif", Font.BOLD, 14)); // Larger font
         label.setForeground(ColorScheme.TEXT_SECONDARY);
         return label;
     }
@@ -487,26 +474,26 @@ public class LoginFrame extends JFrame {
                 
                 // Draw circle background
                 g2d.setColor(ColorScheme.SECONDARY);
-                g2d.fillOval(0, 0, 70, 70);
+                g2d.fillOval(0, 0, 60, 60);
                 
                 // Draw simplified guitar silhouette
                 g2d.setColor(ColorScheme.CARD_BG);
                 
                 // Body
-                g2d.fillOval(18, 35, 35, 35);
+                g2d.fillOval(15, 30, 30, 30);
                 
                 // Neck
-                g2d.fillRect(32, 10, 7, 35);
+                g2d.fillRect(27, 10, 6, 25);
                 
                 // Sound hole
                 g2d.setColor(ColorScheme.SECONDARY);
-                g2d.drawOval(25, 45, 20, 20);
+                g2d.drawOval(22, 38, 15, 15);
                 
                 // Strings
                 g2d.setColor(ColorScheme.CARD_BG);
                 g2d.setStroke(new BasicStroke(1.0f));
-                for (int i = 0; i < 6; i++) {
-                    g2d.drawLine(32, 15 + i * 3, 39, 15 + i * 3);
+                for (int i = 0; i < 4; i++) {
+                    g2d.drawLine(27, 15 + i * 3, 33, 15 + i * 3);
                 }
                 
                 g2d.dispose();
@@ -514,7 +501,7 @@ public class LoginFrame extends JFrame {
             
             @Override
             public Dimension getPreferredSize() {
-                return new Dimension(70, 70);
+                return new Dimension(60, 60);
             }
             
             @Override
@@ -532,35 +519,28 @@ public class LoginFrame extends JFrame {
     }
     
     /**
-     * Setup draggable functionality to move the window
+     * Add draggable functionality to move the window
      */
-    private void setupDragSupport() {
-        // Add a mouse listener to track when the mouse is pressed
-        addMouseListener(new MouseAdapter() {
+    private void addDragSupport(JPanel panel) {
+        MouseAdapter dragAdapter = new MouseAdapter() {
+            private int dragStartX, dragStartY;
+            
             @Override
             public void mousePressed(MouseEvent e) {
-                initialClick = e.getPoint();
+                dragStartX = e.getX();
+                dragStartY = e.getY();
             }
-        });
-        
-        // Add a mouse motion listener to move the window
-        addMouseMotionListener(new MouseAdapter() {
+            
             @Override
             public void mouseDragged(MouseEvent e) {
-                // Get current location of the frame
-                int thisX = getLocation().x;
-                int thisY = getLocation().y;
-                
-                // Determine how much the mouse moved
-                int xMoved = e.getX() - initialClick.x;
-                int yMoved = e.getY() - initialClick.y;
-                
-                // Move window to this position
-                int newX = thisX + xMoved;
-                int newY = thisY + yMoved;
+                int newX = getLocation().x + e.getX() - dragStartX;
+                int newY = getLocation().y + e.getY() - dragStartY;
                 setLocation(newX, newY);
             }
-        });
+        };
+        
+        panel.addMouseListener(dragAdapter);
+        panel.addMouseMotionListener(dragAdapter);
     }
     
     /**
@@ -627,33 +607,8 @@ public class LoginFrame extends JFrame {
      * Show error message with fade-in effect
      */
     private void showError(String message) {
-        statusLabel.setForeground(new Color(231, 76, 60, 0)); // Start transparent
+        statusLabel.setForeground(new Color(231, 76, 60, 255));
         statusLabel.setText(message);
-        
-        // Stop any running fade animation
-        if (fadeTimer != null && fadeTimer.isRunning()) {
-            fadeTimer.stop();
-        }
-        
-        // Start fade-in animation
-        fadeTimer = new Timer(20, null);
-        fadeTimer.addActionListener(new ActionListener() {
-            int alpha = 0;
-            
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                alpha += 10;
-                if (alpha > 255) {
-                    alpha = 255;
-                    fadeTimer.stop();
-                    return;
-                }
-                
-                statusLabel.setForeground(new Color(231, 76, 60, alpha));
-            }
-        });
-        
-        fadeTimer.start();
     }
     
     /**
@@ -661,13 +616,7 @@ public class LoginFrame extends JFrame {
      */
     private void shakeLoginButton() {
         final int originalX = loginButton.getLocation().x;
-        
-        // Stop any running shake animation
-        if (shakeTimer != null && shakeTimer.isRunning()) {
-            shakeTimer.stop();
-        }
-        
-        shakeTimer = new Timer(30, null);
+        final Timer shakeTimer = new Timer(30, null);
         
         shakeTimer.addActionListener(new ActionListener() {
             int count = 0;
@@ -701,5 +650,15 @@ public class LoginFrame extends JFrame {
     private void openRegistrationForm() {
         dispose();
         new RegistrationFrame().setVisible(true);
+    }
+    
+    /**
+     * Utility method to lighten a color
+     */
+    private Color lighten(Color color, float factor) {
+        int r = Math.min(255, (int)(color.getRed() + (255 - color.getRed()) * factor));
+        int g = Math.min(255, (int)(color.getGreen() + (255 - color.getGreen()) * factor));
+        int b = Math.min(255, (int)(color.getBlue() + (255 - color.getBlue()) * factor));
+        return new Color(r, g, b);
     }
 }
