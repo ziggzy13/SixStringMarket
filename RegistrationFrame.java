@@ -40,23 +40,6 @@ public class RegistrationFrame extends JFrame {
     private UserService userService;
     
     /**
-     * Main method to run the RegistrationFrame directly
-     */
-    public static void main(String[] args) {
-        // Set system look and feel
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        // Start the frame on the Event Dispatch Thread
-        SwingUtilities.invokeLater(() -> {
-            new RegistrationFrame().setVisible(true);
-        });
-    }
-    
-    /**
      * Constructor
      */
     public RegistrationFrame() {
@@ -84,7 +67,7 @@ public class RegistrationFrame extends JFrame {
      * Initialize UI components
      */
     private void initComponents() {
-        // Main background panel with gradient and decorations
+        // Main background panel with gradient
         JPanel backgroundPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -95,40 +78,46 @@ public class RegistrationFrame extends JFrame {
                 // Create gradient background
                 GradientPaint gradient = new GradientPaint(
                     0, 0, ColorScheme.PRIMARY,
-                    getWidth(), getHeight(), ColorScheme.BACKGROUND
+                    0, getHeight(), ColorScheme.BACKGROUND
                 );
                 g2d.setPaint(gradient);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 
-                // Add decorative elements
+                // Draw decorative elements (using text instead of emojis)
                 drawDecorations(g2d);
                 
                 g2d.dispose();
             }
             
             private void drawDecorations(Graphics2D g2d) {
-                // Draw some guitar silhouettes and musical symbols
+                // Draw musical decorations using Unicode symbols with a specified font
                 g2d.setColor(new Color(255, 255, 255, 15)); // Very subtle white
+                g2d.setFont(new Font("Arial Unicode MS", Font.PLAIN, 24));
                 
-                // Add some decorative circles in the background
-                for (int i = 0; i < 8; i++) {
-                    int size = 50 + (int)(Math.random() * 200);
-                    int x = (int)(Math.random() * getWidth());
-                    int y = (int)(Math.random() * getHeight());
-                    g2d.fillOval(x - size/2, y - size/2, size, size);
+                // Musical notes (Unicode symbols)
+                g2d.drawString("\u266A", 50, 400);  // Musical note
+                g2d.drawString("\u266B", 350, 200); // Musical notes
+                g2d.drawString("\u266A", 280, 450); // Musical note
+                
+                // Draw guitar icon (simple shape)
+                drawGuitarShape(g2d, getWidth() - 120, getHeight() - 100, 220);
+                drawGuitarShape(g2d, 80, 150, 100);
+                
+                // Strings/waves
+                g2d.setStroke(new BasicStroke(1.0f));
+                for (int i = 1; i <= 5; i++) {
+                    int y = getHeight() - 100 + i * 15;
+                    
+                    // Create curved strings with sine wave
+                    for (int x = 0; x < getWidth(); x += 2) {
+                        int y1 = (int)(y + 5 * Math.sin(x * 0.03 + i));
+                        int y2 = (int)(y + 5 * Math.sin((x+2) * 0.03 + i));
+                        g2d.drawLine(x, y1, x+2, y2);
+                    }
                 }
-                
-                // Draw a guitar in bottom right
-                drawGuitar(g2d, getWidth() - 120, getHeight() - 100, 220);
-                
-                // Draw music notes
-                g2d.setFont(new Font("Segoe UI Symbol", Font.PLAIN, 24));
-                g2d.drawString("♪", 100, 150);
-                g2d.drawString("♫", 650, 250);
-                g2d.drawString("♬", 250, 500);
             }
             
-            private void drawGuitar(Graphics2D g2d, int x, int y, int size) {
+            private void drawGuitarShape(Graphics2D g2d, int x, int y, int size) {
                 // Draw guitar body (oval)
                 int bodyWidth = size/2;
                 int bodyHeight = (int) (size/1.5f);
@@ -148,8 +137,8 @@ public class RegistrationFrame extends JFrame {
         backgroundPanel.setLayout(new BorderLayout());
         
         // Window controls
-        JPanel windowControlsPanel = createWindowControlsPanel();
-        backgroundPanel.add(windowControlsPanel, BorderLayout.NORTH);
+        JPanel controlsPanel = createWindowControlsPanel();
+        backgroundPanel.add(controlsPanel, BorderLayout.NORTH);
         
         // Main container panel
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -157,14 +146,27 @@ public class RegistrationFrame extends JFrame {
         
         // Left panel with form
         JPanel formPanel = createFormPanel();
-        mainPanel.add(formPanel, BorderLayout.CENTER);
+        formPanel.setPreferredSize(new Dimension(450, formPanel.getPreferredSize().height));
+        
+        // Make the form panel scrollable
+        JScrollPane scrollPane = new JScrollPane(formPanel);
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setMinimumSize(new Dimension(450, 0));
+        scrollPane.setPreferredSize(new Dimension(450, 0));
         
         // Right panel with guitar image and welcome
         JPanel welcomePanel = createWelcomePanel();
-        mainPanel.add(welcomePanel, BorderLayout.EAST);
         
         // Make the window draggable
         addDragSupport(backgroundPanel);
+        
+        // Add panels to main container
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(welcomePanel, BorderLayout.EAST);
         
         backgroundPanel.add(mainPanel, BorderLayout.CENTER);
         
@@ -208,9 +210,22 @@ public class RegistrationFrame extends JFrame {
         controlButtonsPanel.setOpaque(false);
         
         // Minimize button
-        JButton minimizeBtn = new JButton("\u2014"); // Unicode for em dash
+        JButton minimizeBtn = new JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(isEnabled() ? getForeground() : getForeground().darker());
+                g2d.setStroke(new BasicStroke(2f));
+                int width = getWidth();
+                int height = getHeight();
+                g2d.drawLine(width/4, height/2, width*3/4, height/2);
+                g2d.dispose();
+            }
+        };
         minimizeBtn.setForeground(ColorScheme.TEXT);
-        minimizeBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        minimizeBtn.setPreferredSize(new Dimension(30, 20));
         minimizeBtn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         minimizeBtn.setContentAreaFilled(false);
         minimizeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -218,9 +233,23 @@ public class RegistrationFrame extends JFrame {
         minimizeBtn.addActionListener(e -> setState(JFrame.ICONIFIED));
         
         // Close button
-        JButton closeBtn = new JButton("\u2715"); // Unicode for multiplication X
+        JButton closeBtn = new JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(isEnabled() ? getForeground() : getForeground().darker());
+                g2d.setStroke(new BasicStroke(2f));
+                int width = getWidth();
+                int height = getHeight();
+                g2d.drawLine(width/4, height/4, width*3/4, height*3/4);
+                g2d.drawLine(width*3/4, height/4, width/4, height*3/4);
+                g2d.dispose();
+            }
+        };
         closeBtn.setForeground(ColorScheme.TEXT);
-        closeBtn.setFont(new Font("Arial", Font.BOLD, 12));
+        closeBtn.setPreferredSize(new Dimension(30, 20));
         closeBtn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         closeBtn.setContentAreaFilled(false);
         closeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -408,7 +437,7 @@ public class RegistrationFrame extends JFrame {
         emailPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         emailPanel.add(emailValidationLabel);
         
-        // Phone field (optional) - made fully visible
+        // Phone field (optional)
         JPanel phonePanel = createInputFieldPanel("Phone", "optional");
         phoneField = createStyledTextField();
         phoneField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
@@ -420,12 +449,6 @@ public class RegistrationFrame extends JFrame {
         phonePanel.add(phoneField);
         phonePanel.add(Box.createRigidArea(new Dimension(0, 5)));
         phonePanel.add(phoneFormatLabel);
-        
-        // Make sure field is showing
-        phoneField.setOpaque(true);
-        phoneField.setBackground(ColorScheme.FIELD_BG);
-        phonePanel.setVisible(true);
-        phonePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0)); // Add some bottom padding
         
         // Address field (optional)
         JPanel addressPanel = createInputFieldPanel("Address", "optional");
@@ -446,16 +469,17 @@ public class RegistrationFrame extends JFrame {
         
         addressPanel.add(addressScrollPane);
         
-        // Register button
+        // Register button - Bigger and more prominent
         registerButton = new JButton("Create Account");
-        registerButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        registerButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
         registerButton.setBackground(ColorScheme.SECONDARY);
         registerButton.setForeground(Color.WHITE);
         registerButton.setFocusPainted(false);
         registerButton.setBorderPainted(false);
         registerButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         registerButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        registerButton.setMaximumSize(new Dimension(200, 40));
+        registerButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        registerButton.setPreferredSize(new Dimension(200, 50));
         registerButton.addActionListener(e -> register());
         
         // Button hover effect
@@ -471,7 +495,7 @@ public class RegistrationFrame extends JFrame {
             }
         });
         
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 20));
         buttonPanel.setOpaque(false);
         buttonPanel.add(registerButton);
         
@@ -505,7 +529,6 @@ public class RegistrationFrame extends JFrame {
     
     /**
      * Create welcome panel with guitar image and text
-     * Updated to match background color instead of using gradient
      */
     private JPanel createWelcomePanel() {
         JPanel panel = new JPanel() {
@@ -515,8 +538,12 @@ public class RegistrationFrame extends JFrame {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Use background color instead of gradient
-                g2d.setColor(ColorScheme.BACKGROUND);
+                // Create gradient background for welcome panel
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, ColorScheme.SECONDARY,
+                    0, getHeight(), ColorScheme.darken(ColorScheme.SECONDARY, 0.3f)
+                );
+                g2d.setPaint(gradient);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 
                 g2d.dispose();
@@ -531,7 +558,7 @@ public class RegistrationFrame extends JFrame {
         contentPanel.setOpaque(false);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(40, 30, 40, 30));
         
-        // Logo/guitar icon - updated color to primary for visibility on background
+        // Logo/guitar icon - using custom painting instead of emojis
         JLabel logoLabel = new JLabel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -539,8 +566,8 @@ public class RegistrationFrame extends JFrame {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Draw simplified guitar in primary color instead of white
-                g2d.setColor(ColorScheme.PRIMARY);
+                // Draw simplified guitar in white
+                g2d.setColor(Color.WHITE);
                 
                 // Body
                 g2d.fillOval(25, 40, 50, 60);
@@ -548,12 +575,12 @@ public class RegistrationFrame extends JFrame {
                 // Neck
                 g2d.fillRect(45, 10, 10, 40);
                 
-                // Sound hole - use lighter background color 
-                g2d.setColor(ColorScheme.lighten(ColorScheme.BACKGROUND, 0.2f));
+                // Sound hole
+                g2d.setColor(ColorScheme.SECONDARY);
                 g2d.fillOval(35, 55, 30, 30);
                 
-                // Strings - use secondary color for better visibility
-                g2d.setColor(ColorScheme.SECONDARY);
+                // Strings
+                g2d.setColor(Color.WHITE);
                 g2d.setStroke(new BasicStroke(1.0f));
                 for (int i = 0; i < 6; i++) {
                     g2d.drawLine(47, 15 + i * 3, 53, 15 + i * 3);
@@ -579,18 +606,18 @@ public class RegistrationFrame extends JFrame {
         };
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Welcome text - updated colors for visibility on background
+        // Welcome text
         JLabel welcomeLabel = new JLabel("Welcome to");
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        welcomeLabel.setForeground(ColorScheme.PRIMARY); // Changed from white to primary color
+        welcomeLabel.setForeground(Color.WHITE);
         welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JLabel appNameLabel = new JLabel("SixStringMarket");
         appNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        appNameLabel.setForeground(ColorScheme.SECONDARY); // Changed from white to secondary color
+        appNameLabel.setForeground(Color.WHITE);
         appNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Benefits list
+        // Benefits list - using custom drawn checkmarks
         String[] benefits = {
             "Buy and sell guitars easily",
             "Connect with other musicians",
@@ -608,13 +635,33 @@ public class RegistrationFrame extends JFrame {
             JPanel itemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
             itemPanel.setOpaque(false);
             
-            JLabel iconLabel = new JLabel("\u2713"); // Unicode for checkmark
-            iconLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-            iconLabel.setForeground(ColorScheme.SECONDARY); // Changed from white to secondary color
+            // Draw custom checkmark
+            JLabel iconLabel = new JLabel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2d = (Graphics2D) g.create();
+                    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2d.setColor(Color.WHITE);
+                    g2d.setStroke(new BasicStroke(2f));
+                    
+                    // Draw checkmark
+                    int[] xPoints = {2, 6, 14};
+                    int[] yPoints = {8, 12, 2};
+                    g2d.drawPolyline(xPoints, yPoints, 3);
+                    
+                    g2d.dispose();
+                }
+                
+                @Override
+                public Dimension getPreferredSize() {
+                    return new Dimension(16, 16);
+                }
+            };
             
             JLabel textLabel = new JLabel(benefit);
             textLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            textLabel.setForeground(ColorScheme.TEXT); // Changed from white to text color
+            textLabel.setForeground(Color.WHITE);
             
             itemPanel.add(iconLabel);
             itemPanel.add(textLabel);
@@ -622,7 +669,6 @@ public class RegistrationFrame extends JFrame {
             benefitsPanel.add(itemPanel);
         }
         
-        contentPanel.add(Box.createVerticalGlue());
         contentPanel.add(logoLabel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         contentPanel.add(welcomeLabel);
@@ -630,11 +676,35 @@ public class RegistrationFrame extends JFrame {
         contentPanel.add(appNameLabel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 40)));
         contentPanel.add(benefitsPanel);
-        contentPanel.add(Box.createVerticalGlue());
         
         panel.add(contentPanel, BorderLayout.CENTER);
         
         return panel;
+    }
+    
+    /**
+     * Add window drag functionality
+     */
+    private void addDragSupport(JPanel panel) {
+        MouseAdapter dragAdapter = new MouseAdapter() {
+            private int dragStartX, dragStartY;
+            
+            @Override
+            public void mousePressed(MouseEvent e) {
+                dragStartX = e.getX();
+                dragStartY = e.getY();
+            }
+            
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int newX = getLocation().x + e.getX() - dragStartX;
+                int newY = getLocation().y + e.getY() - dragStartY;
+                setLocation(newX, newY);
+            }
+        };
+        
+        panel.addMouseListener(dragAdapter);
+        panel.addMouseMotionListener(dragAdapter);
     }
     
     /**
@@ -650,6 +720,8 @@ public class RegistrationFrame extends JFrame {
             BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
             BorderFactory.createEmptyBorder(8, 8, 8, 8)
         ));
+        field.setMinimumSize(new Dimension(250, field.getPreferredSize().height));
+        field.setPreferredSize(new Dimension(400, field.getPreferredSize().height));
         
         // Add focus effect
         field.addFocusListener(new FocusAdapter() {
@@ -686,6 +758,8 @@ public class RegistrationFrame extends JFrame {
             BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
             BorderFactory.createEmptyBorder(8, 8, 8, 8)
         ));
+        field.setMinimumSize(new Dimension(250, field.getPreferredSize().height));
+        field.setPreferredSize(new Dimension(400, field.getPreferredSize().height));
         
         // Add focus effect
         field.addFocusListener(new FocusAdapter() {
@@ -748,31 +822,6 @@ public class RegistrationFrame extends JFrame {
     }
     
     /**
-     * Add window drag functionality
-     */
-    private void addDragSupport(JPanel panel) {
-        MouseAdapter dragAdapter = new MouseAdapter() {
-            private int dragStartX, dragStartY;
-            
-            @Override
-            public void mousePressed(MouseEvent e) {
-                dragStartX = e.getX();
-                dragStartY = e.getY();
-            }
-            
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                int newX = getLocation().x + e.getX() - dragStartX;
-                int newY = getLocation().y + e.getY() - dragStartY;
-                setLocation(newX, newY);
-            }
-        };
-        
-        panel.addMouseListener(dragAdapter);
-        panel.addMouseMotionListener(dragAdapter);
-    }
-    
-    /**
      * Validate username field
      */
     private void validateUsername() {
@@ -831,7 +880,7 @@ public class RegistrationFrame extends JFrame {
         }
         
         // Also validate confirm password if it's not empty
-        if (!new String(confirmPasswordField.getPassword()).isEmpty()) {
+        if (confirmPasswordField.getPassword().length > 0) {
             validateConfirmPassword();
         }
     }
@@ -840,15 +889,34 @@ public class RegistrationFrame extends JFrame {
      * Validate password confirmation
      */
     private void validateConfirmPassword() {
-        String password = new String(passwordField.getPassword());
-        String confirmPassword = new String(confirmPasswordField.getPassword());
+        char[] passwordChars = passwordField.getPassword();
+        char[] confirmChars = confirmPasswordField.getPassword();
         
-        if (confirmPassword.isEmpty()) {
+        if (confirmChars.length == 0) {
             confirmPasswordValidationLabel.setText(" ");
             return;
         }
         
-        if (!password.equals(confirmPassword)) {
+        // Convert to strings for comparison
+        String password = new String(passwordChars);
+        String confirmPassword = new String(confirmChars);
+        
+        // Debug output (remove in production)
+        System.out.println("Password: [" + password + "], Confirm: [" + confirmPassword + "]");
+        System.out.println("Length: " + password.length() + ", " + confirmPassword.length());
+        
+        // Explicit character-by-character comparison
+        boolean matches = password.length() == confirmPassword.length();
+        if (matches) {
+            for (int i = 0; i < password.length(); i++) {
+                if (password.charAt(i) != confirmPassword.charAt(i)) {
+                    matches = false;
+                    break;
+                }
+            }
+        }
+        
+        if (!matches) {
             confirmPasswordValidationLabel.setText("Passwords don't match");
             confirmPasswordValidationLabel.setForeground(ColorScheme.ERROR);
         } else {
@@ -1045,10 +1113,29 @@ public class RegistrationFrame extends JFrame {
         panel.setBackground(ColorScheme.CARD_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        JLabel iconLabel = new JLabel("\u2713"); // Unicode for checkmark
-        iconLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        iconLabel.setForeground(ColorScheme.SUCCESS);
-        iconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        // Custom drawn check mark instead of emoji
+        JLabel iconLabel = new JLabel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(ColorScheme.SUCCESS);
+                g2d.setStroke(new BasicStroke(3f));
+                
+                // Draw checkmark
+                int[] xPoints = {5, 15, 30};
+                int[] yPoints = {20, 30, 5};
+                g2d.drawPolyline(xPoints, yPoints, 3);
+                
+                g2d.dispose();
+            }
+            
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(40, 40);
+            }
+        };
         iconLabel.setPreferredSize(new Dimension(40, 40));
         
         JLabel messageLabel = new JLabel(message);
@@ -1073,5 +1160,24 @@ public class RegistrationFrame extends JFrame {
         
         dialog.add(panel);
         dialog.setVisible(true);
+    }
+    
+    /**
+     * Main method to launch the application
+     * @param args Command line arguments
+     */
+    public static void main(String[] args) {
+        // Set look and feel to the system look and feel
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // Schedule a job for the event dispatch thread:
+        // creating and showing this application's GUI.
+        SwingUtilities.invokeLater(() -> {
+            new RegistrationFrame().setVisible(true);
+        });
     }
 }
