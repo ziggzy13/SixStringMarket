@@ -1,13 +1,14 @@
 package com.sixstringmarket.ui.components;
 
 import com.sixstringmarket.util.Constants;
+import com.sixstringmarket.util.ColorScheme;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Модерен панел с възможност за заоблени ъгли и сянка
+ * Modern panel with rounded corners and shadow options
  */
 public class ModernPanel extends JPanel {
     
@@ -18,17 +19,17 @@ public class ModernPanel extends JPanel {
     private Font titleFont;
     
     /**
-     * Създава модерен панел с основен стил
+     * Create a modern panel with basic style
      */
     public ModernPanel() {
         this(null, true, false);
     }
     
     /**
-     * Създава модерен панел с персонализиран стил
-     * @param title Заглавие на панела (null за без заглавие)
-     * @param isRound Флаг дали панелът е със заоблени ъгли
-     * @param hasShadow Флаг дали панелът има сянка
+     * Create a modern panel with custom style
+     * @param title Panel title (null for no title)
+     * @param isRound Flag whether panel has rounded corners
+     * @param hasShadow Flag whether panel has shadow
      */
     public ModernPanel(String title, boolean isRound, boolean hasShadow) {
         this.title = title;
@@ -41,7 +42,7 @@ public class ModernPanel extends JPanel {
     }
     
     /**
-     * Инициализира стиловете на панела
+     * Initialize panel styles
      */
     private void setup() {
         setOpaque(false);
@@ -51,7 +52,7 @@ public class ModernPanel extends JPanel {
                 Constants.PADDING_MEDIUM,
                 Constants.PADDING_MEDIUM));
         
-        // Ако има заглавие, добавяме допълнителен отстъп отгоре
+        // If there's a title, add extra padding at top
         if (title != null) {
             setBorder(BorderFactory.createEmptyBorder(
                     Constants.PADDING_LARGE + titleFont.getSize(),
@@ -62,7 +63,7 @@ public class ModernPanel extends JPanel {
     }
     
     /**
-     * Персонализирано рисуване на панела
+     * Custom panel painting
      */
     @Override
     protected void paintComponent(Graphics g) {
@@ -74,7 +75,7 @@ public class ModernPanel extends JPanel {
         int width = getWidth();
         int height = getHeight();
         
-        // Рисуване на сянка, ако е необходимо
+        // Draw shadow if needed
         if (hasShadow) {
             for (int i = 0; i < 5; i++) {
                 g2d.setColor(new Color(0, 0, 0, 10));
@@ -88,7 +89,7 @@ public class ModernPanel extends JPanel {
             }
         }
         
-        // Рисуване на фона на панела
+        // Draw panel background
         g2d.setColor(backgroundColor);
         
         if (isRound) {
@@ -99,10 +100,12 @@ public class ModernPanel extends JPanel {
             g2d.fillRect(0, 0, width, height);
         }
         
-        // Рисуване на заглавието, ако има такова
+        // Draw title with appropriate text color
         if (title != null) {
             g2d.setFont(titleFont);
-            g2d.setColor(Constants.TEXT_COLOR);
+            // Check if background is light and adjust text color accordingly
+            Color textColor = Constants.getTextColorForBackground(backgroundColor);
+            g2d.setColor(textColor);
             FontMetrics fm = g2d.getFontMetrics();
             int titleWidth = fm.stringWidth(title);
             int titleHeight = fm.getHeight();
@@ -113,8 +116,8 @@ public class ModernPanel extends JPanel {
     }
     
     /**
-     * Задава цвят на фона
-     * @param color Цвят
+     * Set background color
+     * @param color Color
      */
     public void setBackgroundColor(Color color) {
         this.backgroundColor = color;
@@ -122,13 +125,13 @@ public class ModernPanel extends JPanel {
     }
     
     /**
-     * Задава заглавие на панела
-     * @param title Заглавие
+     * Set panel title
+     * @param title Title
      */
     public void setTitle(String title) {
         this.title = title;
         
-        // Обновяване на отстъпа
+        // Update padding
         setBorder(BorderFactory.createEmptyBorder(
                 Constants.PADDING_LARGE + titleFont.getSize(),
                 Constants.PADDING_MEDIUM,
@@ -139,8 +142,8 @@ public class ModernPanel extends JPanel {
     }
     
     /**
-     * Задава шрифт на заглавието
-     * @param font Шрифт
+     * Set title font
+     * @param font Font
      */
     public void setTitleFont(Font font) {
         this.titleFont = font;

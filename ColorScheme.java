@@ -12,8 +12,12 @@ public class ColorScheme {
     public static final Color SECONDARY = new Color(186, 80, 80);      // Rich red
     public static final Color BACKGROUND = new Color(28, 30, 46);      // Dark blue-gray
     public static final Color CARD_BG = new Color(45, 48, 71);         // Slightly lighter than background
-    public static final Color TEXT = new Color(230, 230, 235);         // Off-white
-    public static final Color TEXT_SECONDARY = new Color(170, 170, 180); // Light gray
+    
+    // Text colors with high contrast to backgrounds
+    public static final Color TEXT = new Color(230, 230, 235);         // Off-white for dark backgrounds
+    public static final Color TEXT_SECONDARY = new Color(170, 170, 180); // Light gray for dark backgrounds
+    public static final Color TEXT_ON_LIGHT = Color.BLACK;             // Black text for light backgrounds
+    public static final Color TEXT_SECONDARY_ON_LIGHT = new Color(70, 70, 70); // Dark gray for light backgrounds
     
     // Functional colors
     public static final Color SUCCESS = new Color(72, 187, 120);       // Green
@@ -39,6 +43,32 @@ public class ColorScheme {
     
     // Shadows
     public static final Color SHADOW = new Color(10, 10, 15, 100);     // Subtle shadow
+    
+    /**
+     * Returns an appropriate text color based on the background color
+     * @param background The background color
+     * @return White for dark backgrounds, black for light backgrounds
+     */
+    public static Color getTextColorForBackground(Color background) {
+        // Calculate luminance (simplified formula)
+        double luminance = (0.299 * background.getRed() + 0.587 * background.getGreen() + 0.114 * background.getBlue()) / 255;
+        
+        // Use black text on light backgrounds, white text on dark backgrounds
+        return luminance > 0.5 ? Color.BLACK : Color.WHITE;
+    }
+    
+    /**
+     * Returns an appropriate secondary text color based on the background color
+     * @param background The background color
+     * @return Light gray for dark backgrounds, dark gray for light backgrounds
+     */
+    public static Color getSecondaryTextColorForBackground(Color background) {
+        // Calculate luminance (simplified formula)
+        double luminance = (0.299 * background.getRed() + 0.587 * background.getGreen() + 0.114 * background.getBlue()) / 255;
+        
+        // Use dark gray on light backgrounds, light gray on dark backgrounds
+        return luminance > 0.5 ? TEXT_SECONDARY_ON_LIGHT : TEXT_SECONDARY;
+    }
     
     /**
      * Returns a lighter version of the given color

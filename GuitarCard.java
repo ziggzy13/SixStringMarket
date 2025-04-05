@@ -5,6 +5,7 @@ import com.sixstringmarket.model.Guitar.Status;
 import com.sixstringmarket.ui.MainFrame;
 import com.sixstringmarket.util.Constants;
 import com.sixstringmarket.util.ImageHandler;
+import com.sixstringmarket.util.ColorScheme;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +18,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 /**
- * Модерен компонент за показване на китара в списъчен изглед
+ * Modern component for displaying a guitar in list view
  */
 public class GuitarCard extends JPanel {
     
@@ -32,9 +33,9 @@ public class GuitarCard extends JPanel {
     private JLabel statusLabel;
     
     /**
-     * Конструктор
-     * @param guitar Китарата, която ще се показва
-     * @param parentFrame Родителският прозорец
+     * Constructor
+     * @param guitar The guitar to display
+     * @param parentFrame The parent frame
      */
     public GuitarCard(Guitar guitar, MainFrame parentFrame) {
         this.guitar = guitar;
@@ -50,12 +51,13 @@ public class GuitarCard extends JPanel {
         
         initComponents();
         
-        // Добавяне на ефекти при hover и click
+        // Add hover and click effects
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 isHovered = true;
                 repaint();
+                setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
             
             @Override
@@ -63,6 +65,7 @@ public class GuitarCard extends JPanel {
                 isHovered = false;
                 isPressed = false;
                 repaint();
+                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
             
             @Override
@@ -75,7 +78,7 @@ public class GuitarCard extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 isPressed = false;
                 if (contains(e.getPoint())) {
-                    // Отваряне на детайли за китарата
+                    // Open guitar details
                     parentFrame.showGuitarDetailsPanel(guitar.getGuitarId());
                 }
                 repaint();
@@ -84,15 +87,15 @@ public class GuitarCard extends JPanel {
     }
     
     /**
-     * Инициализира компонентите на картата
+     * Initialize components
      */
     private void initComponents() {
-        // Ляв панел със снимка
+        // Left panel with image
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setOpaque(false);
         imagePanel.setPreferredSize(new Dimension(130, 130));
         
-        // Зареждане на снимката или показване на заместваща снимка
+        // Load image or show placeholder
         BufferedImage image = null;
         if (guitar.getImagePath() != null && !guitar.getImagePath().isEmpty()) {
             image = ImageHandler.loadImage(guitar.getImagePath());
@@ -101,7 +104,7 @@ public class GuitarCard extends JPanel {
         if (image != null) {
             imageLabel = new JLabel(new ImageIcon(image.getScaledInstance(120, 120, Image.SCALE_SMOOTH)));
         } else {
-            // Заместваща снимка с икона на китара
+            // Placeholder image with guitar icon
             imageLabel = new JLabel(UIManager.getIcon("OptionPane.questionIcon"));
             imageLabel.setHorizontalAlignment(JLabel.CENTER);
         }
@@ -110,13 +113,18 @@ public class GuitarCard extends JPanel {
         imagePanel.add(imageLabel, BorderLayout.CENTER);
         add(imagePanel, BorderLayout.WEST);
         
-        // Десен панел с информация
+        // Right panel with information
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.setOpaque(false);
         infoPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 15));
         
-        // Заглавие
+        // Determine appropriate text colors based on panel background
+        Color backgroundColor = Constants.PANEL_COLOR;
+        Color textColor = Constants.getTextColorForBackground(backgroundColor);
+        Color secondaryTextColor = Constants.getSecondaryTextColorForBackground(backgroundColor);
+        
+        // Title
         titleLabel = new JLabel(guitar.getTitle());
         titleLabel.setFont(Constants.CARD_TITLE_FONT);
         titleLabel.setForeground(Constants.PRIMARY_COLOR);
@@ -125,51 +133,52 @@ public class GuitarCard extends JPanel {
         
         infoPanel.add(Box.createVerticalStrut(5));
         
-        // Марка и модел
+        // Brand and model with appropriate text color
         String brandModel = guitar.getBrand();
         if (guitar.getModel() != null && !guitar.getModel().isEmpty()) {
             brandModel += " " + guitar.getModel();
         }
         JLabel brandModelLabel = new JLabel(brandModel);
         brandModelLabel.setFont(Constants.DEFAULT_FONT);
-        brandModelLabel.setForeground(Constants.TEXT_COLOR);
+        brandModelLabel.setForeground(textColor);
         brandModelLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         infoPanel.add(brandModelLabel);
         
         infoPanel.add(Box.createVerticalStrut(5));
         
-        // Тип и състояние
+        // Type and condition with appropriate text color
         String typeCondition = getGuitarTypeText(guitar.getType()) + ", " + getConditionText(guitar.getCondition());
         if (guitar.getManufacturingYear() != null) {
             typeCondition += ", " + guitar.getManufacturingYear() + " г.";
         }
         typeLabel = new JLabel(typeCondition);
         typeLabel.setFont(Constants.SMALL_FONT);
-        typeLabel.setForeground(Constants.TEXT_SECONDARY_COLOR);
+        typeLabel.setForeground(secondaryTextColor);
         typeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         infoPanel.add(typeLabel);
         
         infoPanel.add(Box.createVerticalStrut(10));
         
-        // Долен панел с цена и статус
+        // Bottom panel with price and status
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setOpaque(false);
         
-        // Форматиране на цената
+        // Format price
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("bg", "BG"));
         String formattedPrice = currencyFormatter.format(guitar.getPrice());
         
-        // Цена
+        // Price (keep success color for emphasis)
         priceLabel = new JLabel(formattedPrice);
         priceLabel.setFont(new Font(Constants.BOLD_FONT.getName(), Font.BOLD, 18));
         priceLabel.setForeground(Constants.SUCCESS_COLOR);
         bottomPanel.add(priceLabel, BorderLayout.WEST);
         
-        // Статус (показва се само ако е различен от ACTIVE)
+        // Status (shown only if not ACTIVE)
         if (guitar.getStatus() != Status.ACTIVE) {
             statusLabel = new JLabel(getStatusText(guitar.getStatus()));
             statusLabel.setFont(Constants.BOLD_FONT);
             
+            // High-contrast colors for status
             switch (guitar.getStatus()) {
                 case SOLD:
                     statusLabel.setForeground(Constants.ERROR_COLOR);
@@ -178,7 +187,7 @@ public class GuitarCard extends JPanel {
                     statusLabel.setForeground(Constants.WARNING_COLOR);
                     break;
                 default:
-                    statusLabel.setForeground(Constants.TEXT_SECONDARY_COLOR);
+                    statusLabel.setForeground(secondaryTextColor);
             }
             
             bottomPanel.add(statusLabel, BorderLayout.EAST);
@@ -190,7 +199,7 @@ public class GuitarCard extends JPanel {
     }
     
     /**
-     * Персонализирано рисуване на картата
+     * Custom painting for modern look
      */
     @Override
     protected void paintComponent(Graphics g) {
@@ -201,18 +210,20 @@ public class GuitarCard extends JPanel {
         int height = getHeight();
         int arc = Constants.ROUNDED_CORNER_RADIUS;
         
-        // Рисуване на фона на картата
+        // Background color selection based on state
+        Color backgroundColor;
         if (isPressed) {
-            g2d.setColor(new Color(240, 240, 240));
+            backgroundColor = new Color(240, 240, 240);
         } else if (isHovered) {
-            g2d.setColor(new Color(248, 248, 248));
+            backgroundColor = new Color(248, 248, 248);
         } else {
-            g2d.setColor(getBackground());
+            backgroundColor = getBackground();
         }
         
+        g2d.setColor(backgroundColor);
         g2d.fill(new RoundRectangle2D.Double(0, 0, width, height, arc, arc));
         
-        // Рисуване на границата
+        // Border color based on hover state
         g2d.setColor(isHovered ? Constants.SECONDARY_COLOR : new Color(230, 230, 230));
         g2d.setStroke(new BasicStroke(1));
         g2d.draw(new RoundRectangle2D.Double(0, 0, width - 1, height - 1, arc, arc));
@@ -221,47 +232,41 @@ public class GuitarCard extends JPanel {
     }
     
     /**
-     * Преобразува типа на китарата в текст
-     * @param type Типът на китарата
-     * @return Текстово представяне
+     * Convert guitar type to text
      */
     private String getGuitarTypeText(Guitar.GuitarType type) {
         switch (type) {
-            case ACOUSTIC: return "Акустична";
-            case ELECTRIC: return "Електрическа";
-            case CLASSICAL: return "Класическа";
-            case BASS: return "Бас";
-            case OTHER: return "Друга";
-            default: return "Неизвестен";
+            case ACOUSTIC: return "Acoustic";
+            case ELECTRIC: return "Electric";
+            case CLASSICAL: return "Classical";
+            case BASS: return "Bass";
+            case OTHER: return "Other";
+            default: return "Unknown";
         }
     }
     
     /**
-     * Преобразува състоянието на китарата в текст
-     * @param condition Състоянието на китарата
-     * @return Текстово представяне
+     * Convert guitar condition to text
      */
     private String getConditionText(Guitar.Condition condition) {
         switch (condition) {
-            case NEW: return "Нова";
-            case USED: return "Употребявана";
-            case VINTAGE: return "Винтидж";
-            default: return "Неизвестно";
+            case NEW: return "New";
+            case USED: return "Used";
+            case VINTAGE: return "Vintage";
+            default: return "Unknown";
         }
     }
     
     /**
-     * Преобразува статуса на китарата в текст
-     * @param status Статусът на китарата
-     * @return Текстово представяне
+     * Convert guitar status to text
      */
     private String getStatusText(Guitar.Status status) {
         switch (status) {
-            case ACTIVE: return "Активна";
-            case SOLD: return "Продадена";
-            case RESERVED: return "Резервирана";
-            case REMOVED: return "Премахната";
-            default: return "Неизвестен";
+            case ACTIVE: return "Active";
+            case SOLD: return "Sold";
+            case RESERVED: return "Reserved";
+            case REMOVED: return "Removed";
+            default: return "Unknown";
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.sixstringmarket.ui.components;
 
 import com.sixstringmarket.util.Constants;
+import com.sixstringmarket.util.ColorScheme;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Модерен бутон с анимация при hover и натискане
+ * Modern button with hover and press animations
  */
 public class ModernButton extends JButton {
     
@@ -20,45 +21,53 @@ public class ModernButton extends JButton {
     private boolean isRound;
     
     /**
-     * Създава модерен бутон с основен стил
-     * @param text Текст на бутона
+     * Create modern button with basic style
+     * @param text Button text
      */
     public ModernButton(String text) {
         this(text, Constants.PRIMARY_COLOR, Color.WHITE, true);
     }
     
     /**
-     * Създава модерен бутон с акцент стил
-     * @param text Текст на бутона
-     * @param isAccent Флаг дали бутонът е акцент
+     * Create modern button with accent style
+     * @param text Button text
+     * @param isAccent Flag whether button is accent
      */
     public ModernButton(String text, boolean isAccent) {
         this(text, isAccent ? Constants.ACCENT_COLOR : Constants.PRIMARY_COLOR, Color.WHITE, true);
     }
     
     /**
-     * Създава модерен бутон с персонализиран стил
-     * @param text Текст на бутона
-     * @param backgroundColor Цвят на фона
-     * @param textColor Цвят на текста
-     * @param isRound Флаг дали бутонът е със заоблени ъгли
+     * Create modern button with custom style
+     * @param text Button text
+     * @param backgroundColor Background color
+     * @param textColor Text color
+     * @param isRound Flag whether button has rounded corners
      */
     public ModernButton(String text, Color backgroundColor, Color textColor, boolean isRound) {
         super(text);
         this.backgroundColor = backgroundColor;
         this.hoverColor = lightenColor(backgroundColor, 0.2f);
         this.pressedColor = darkenColor(backgroundColor, 0.2f);
-        this.textColor = textColor;
+        
+        // Calculate appropriate text color based on background brightness
+        this.textColor = ColorScheme.getTextColorForBackground(backgroundColor);
+        
+        // Override if explicit text color is provided
+        if (textColor != null) {
+            this.textColor = textColor;
+        }
+        
         this.isRound = isRound;
         
         setup();
     }
     
     /**
-     * Инициализира стиловете и събитията на бутона
+     * Initialize styles and events
      */
     private void setup() {
-        // Настройка на външния вид
+        // Appearance configuration
         setFont(Constants.DEFAULT_FONT);
         setBorderPainted(false);
         setFocusPainted(false);
@@ -66,10 +75,10 @@ public class ModernButton extends JButton {
         setForeground(textColor);
         setOpaque(false);
         
-        // Настройка на размерите
+        // Size configuration
         setPreferredSize(Constants.BUTTON_DIMENSION);
         
-        // Добавяне на ефекти при hover и click
+        // Add hover and click effects
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -102,21 +111,21 @@ public class ModernButton extends JButton {
     }
     
     /**
-     * Персонализирано рисуване на бутона
+     * Custom button painting
      */
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        // Рисуване на фона на бутона
+        // Draw button background
         if (isRound) {
-            // Заоблен бутон
+            // Rounded button
             int arc = Constants.ROUNDED_CORNER_RADIUS;
             g2d.setColor(isEnabled() ? getBackground() != null ? getBackground() : backgroundColor : Constants.TEXT_SECONDARY_COLOR);
             g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), arc, arc));
         } else {
-            // Правоъгълен бутон
+            // Rectangular button
             g2d.setColor(isEnabled() ? getBackground() != null ? getBackground() : backgroundColor : Constants.TEXT_SECONDARY_COLOR);
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
@@ -127,10 +136,10 @@ public class ModernButton extends JButton {
     }
     
     /**
-     * Осветлява цвят
-     * @param color Цветът, който ще се осветли
-     * @param factor Степен на осветляване (0.0 - 1.0)
-     * @return Осветлен цвят
+     * Lighten color
+     * @param color Color to lighten
+     * @param factor Lighten factor (0.0 to 1.0)
+     * @return Lightened color
      */
     private Color lightenColor(Color color, float factor) {
         int r = Math.min(255, (int) (color.getRed() + (255 - color.getRed()) * factor));
@@ -140,10 +149,10 @@ public class ModernButton extends JButton {
     }
     
     /**
-     * Затъмнява цвят
-     * @param color Цветът, който ще се затъмни
-     * @param factor Степен на затъмняване (0.0 - 1.0)
-     * @return Затъмнен цвят
+     * Darken color
+     * @param color Color to darken
+     * @param factor Darken factor (0.0 to 1.0)
+     * @return Darkened color
      */
     private Color darkenColor(Color color, float factor) {
         int r = Math.max(0, (int) (color.getRed() * (1 - factor)));
@@ -153,19 +162,24 @@ public class ModernButton extends JButton {
     }
     
     /**
-     * Задава основен цвят на бутона
-     * @param color Цвят
+     * Set button color
+     * @param color Color
      */
     public void setButtonColor(Color color) {
         this.backgroundColor = color;
         this.hoverColor = lightenColor(color, 0.2f);
         this.pressedColor = darkenColor(color, 0.2f);
+        
+        // Update text color based on background brightness
+        this.textColor = ColorScheme.getTextColorForBackground(color);
+        setForeground(textColor);
+        
         setBackground(color);
         repaint();
     }
     
     /**
-     * Задава малки размери на бутона
+     * Set small button size
      */
     public void setSmallSize() {
         setPreferredSize(Constants.SMALL_BUTTON_DIMENSION);
