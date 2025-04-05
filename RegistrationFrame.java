@@ -1167,28 +1167,30 @@ public class RegistrationFrame extends JFrame {
 
 		// Custom drawn check mark instead of emoji
 		JLabel iconLabel = new JLabel() {
-			@Override
-			protected void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				Graphics2D g2d = (Graphics2D) g.create();
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				g2d.setColor(ColorScheme.SUCCESS);
-				g2d.setStroke(new BasicStroke(3f));
+		    @Override
+		    protected void paintComponent(Graphics g) {
+		        super.paintComponent(g);
+		        Graphics2D g2d = (Graphics2D) g.create();
+		        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		        
+		        // Use a smaller, more elegant checkmark
+		        g2d.setColor(ColorScheme.SUCCESS);
+		        g2d.setStroke(new BasicStroke(2f)); // Thinner stroke for elegance
+		        
+		        // Small checkmark, positioned higher up to be fully visible
+		        int[] xPoints = { 12, 16, 24 };
+		        int[] yPoints = { 13, 17, 7 }; // Moved up by 3 pixels
+		        g2d.drawPolyline(xPoints, yPoints, 3);
+		        
+		        g2d.dispose();
+		    }
 
-				// Draw checkmark
-				int[] xPoints = { 5, 15, 30 };
-				int[] yPoints = { 20, 30, 5 };
-				g2d.drawPolyline(xPoints, yPoints, 3);
-
-				g2d.dispose();
-			}
-
-			@Override
-			public Dimension getPreferredSize() {
-				return new Dimension(40, 40);
-			}
+		    @Override
+		    public Dimension getPreferredSize() {
+		        return new Dimension(36, 30); // Keep the same size
+		    }
 		};
-		iconLabel.setPreferredSize(new Dimension(40, 40));
+		iconLabel.setPreferredSize(new Dimension(36, 30));  
 
 		JLabel messageLabel = new JLabel(message);
 		messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
