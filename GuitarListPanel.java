@@ -49,7 +49,7 @@ public class GuitarListPanel extends JPanel {
         this.sellerId = sellerId;
         
         setLayout(new BorderLayout());
-        setBackground(Constants.BACKGROUND_COLOR);
+        setBackground(Constants.PANEL_COLOR); // Бял фон
         
         initComponents();
         
@@ -63,7 +63,7 @@ public class GuitarListPanel extends JPanel {
     private void initComponents() {
         // Заглавие на панела
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(Constants.BACKGROUND_COLOR);
+        titlePanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         String title = (sellerId == 0) ? "Всички китари" : "Моите обяви";
         JLabel titleLabel = new JLabel(title, JLabel.LEFT);
@@ -91,7 +91,7 @@ public class GuitarListPanel extends JPanel {
         // Панел за списъка с китари
         guitarsPanel = new JPanel();
         guitarsPanel.setLayout(new BoxLayout(guitarsPanel, BoxLayout.Y_AXIS));
-        guitarsPanel.setBackground(Constants.BACKGROUND_COLOR);
+        guitarsPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         JScrollPane scrollPane = new JScrollPane(guitarsPanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -117,6 +117,7 @@ public class GuitarListPanel extends JPanel {
         if (currentGuitars.isEmpty()) {
             JLabel noGuitarsLabel = new JLabel("Няма налични китари");
             noGuitarsLabel.setFont(Constants.DEFAULT_FONT);
+            noGuitarsLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
             noGuitarsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             guitarsPanel.add(Box.createVerticalStrut(50));
             guitarsPanel.add(noGuitarsLabel);
@@ -151,6 +152,7 @@ public class GuitarListPanel extends JPanel {
         if (currentGuitars.isEmpty()) {
             JLabel noResultsLabel = new JLabel("Няма намерени китари по зададените критерии");
             noResultsLabel.setFont(Constants.DEFAULT_FONT);
+            noResultsLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
             noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             guitarsPanel.add(Box.createVerticalStrut(50));
             guitarsPanel.add(noResultsLabel);

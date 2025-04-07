@@ -44,7 +44,7 @@ public class OrderHistoryPanel extends JPanel {
         this.currentUser = AuthenticationService.getInstance().getCurrentUser();
         
         setLayout(new BorderLayout());
-        setBackground(Constants.BACKGROUND_COLOR);
+        setBackground(Constants.PANEL_COLOR); // Бял фон
         
         initComponents();
         
@@ -58,7 +58,7 @@ public class OrderHistoryPanel extends JPanel {
     private void initComponents() {
         // Заглавие на панела
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(Constants.BACKGROUND_COLOR);
+        titlePanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         JLabel titleLabel = new JLabel("История на поръчките", JLabel.LEFT);
         titleLabel.setFont(Constants.TITLE_FONT);
@@ -70,10 +70,11 @@ public class OrderHistoryPanel extends JPanel {
         // Проверка дали има влязъл потребител
         if (!AuthenticationService.getInstance().isAuthenticated()) {
             JPanel messagePanel = new JPanel(new BorderLayout());
-            messagePanel.setBackground(Constants.BACKGROUND_COLOR);
+            messagePanel.setBackground(Constants.PANEL_COLOR); // Бял фон
             
             JLabel notLoggedInLabel = new JLabel("Моля, влезте в системата, за да видите историята на поръчките", JLabel.CENTER);
             notLoggedInLabel.setFont(Constants.DEFAULT_FONT);
+            notLoggedInLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
             messagePanel.add(notLoggedInLabel, BorderLayout.CENTER);
             
             add(messagePanel, BorderLayout.CENTER);
@@ -82,6 +83,7 @@ public class OrderHistoryPanel extends JPanel {
         
         // Създаване на табове
         tabbedPane = new JTabbedPane();
+        tabbedPane.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         // Таблица за поръчки като купувач
         String[] buyerColumns = {"№", "Китара", "Продавач", "Дата", "Цена", "Статус", "Действия"};
@@ -101,6 +103,10 @@ public class OrderHistoryPanel extends JPanel {
         buyerOrdersTable.getColumnModel().getColumn(4).setPreferredWidth(80);  // Цена
         buyerOrdersTable.getColumnModel().getColumn(5).setPreferredWidth(100); // Статус
         buyerOrdersTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Действия
+        buyerOrdersTable.setForeground(Constants.TEXT_COLOR); // Черен текст
+        
+        // Установяване на черен текст за заглавния ред на таблицата
+        buyerOrdersTable.getTableHeader().setForeground(Constants.TEXT_COLOR);
         
         JScrollPane buyerScrollPane = new JScrollPane(buyerOrdersTable);
         
@@ -122,6 +128,10 @@ public class OrderHistoryPanel extends JPanel {
         sellerOrdersTable.getColumnModel().getColumn(4).setPreferredWidth(80);  // Цена
         sellerOrdersTable.getColumnModel().getColumn(5).setPreferredWidth(100); // Статус
         sellerOrdersTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Действия
+        sellerOrdersTable.setForeground(Constants.TEXT_COLOR); // Черен текст
+        
+        // Установяване на черен текст за заглавния ред на таблицата
+        sellerOrdersTable.getTableHeader().setForeground(Constants.TEXT_COLOR);
         
         JScrollPane sellerScrollPane = new JScrollPane(sellerOrdersTable);
         
@@ -155,6 +165,7 @@ public class OrderHistoryPanel extends JPanel {
                         // Показване на меню с опции
                         JPopupMenu menu = new JPopupMenu();
                         JMenuItem cancelItem = new JMenuItem("Откажи поръчката");
+                        cancelItem.setForeground(Constants.TEXT_COLOR); // Черен текст
                         cancelItem.addActionListener(e -> cancelOrder(orderId));
                         menu.add(cancelItem);
                         
@@ -180,10 +191,12 @@ public class OrderHistoryPanel extends JPanel {
                         // Показване на меню с опции
                         JPopupMenu menu = new JPopupMenu();
                         JMenuItem confirmItem = new JMenuItem("Потвърди поръчката");
+                        confirmItem.setForeground(Constants.TEXT_COLOR); // Черен текст
                         confirmItem.addActionListener(e -> confirmOrder(orderId));
                         menu.add(confirmItem);
                         
                         JMenuItem cancelItem = new JMenuItem("Откажи поръчката");
+                        cancelItem.setForeground(Constants.TEXT_COLOR); // Черен текст
                         cancelItem.addActionListener(e -> cancelOrder(orderId));
                         menu.add(cancelItem);
                         

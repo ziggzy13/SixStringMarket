@@ -39,7 +39,7 @@ public class SearchFilterPanel extends JPanel {
         this.searchService = new SearchService();
         
         setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        setBackground(Constants.BACKGROUND_COLOR);
+        setBackground(Constants.PANEL_COLOR); // Бял фон
         
         initComponents();
         addEventListeners();
@@ -52,29 +52,35 @@ public class SearchFilterPanel extends JPanel {
         // Поле за търсене
         searchField = new JTextField(15);
         searchField.setToolTipText("Търсене по заглавие, марка, модел или описание");
+        searchField.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         // Падащо меню за марка
         brandCombo = new JComboBox<>(Constants.GUITAR_BRANDS);
         brandCombo.setPreferredSize(new Dimension(120, 25));
         brandCombo.insertItemAt("Всички марки", 0);
         brandCombo.setSelectedIndex(0);
+        brandCombo.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         // Падащо меню за тип
         String[] types = {"Всички типове", "Акустична", "Електрическа", "Класическа", "Бас", "Друга"};
         typeCombo = new JComboBox<>(types);
         typeCombo.setPreferredSize(new Dimension(120, 25));
+        typeCombo.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         // Падащо меню за състояние
         String[] conditions = {"Всички състояния", "Нова", "Употребявана", "Винтидж"};
         conditionCombo = new JComboBox<>(conditions);
         conditionCombo.setPreferredSize(new Dimension(120, 25));
+        conditionCombo.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         // Полета за цена
         minPriceField = new JTextField(5);
         minPriceField.setToolTipText("Минимална цена");
+        minPriceField.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         maxPriceField = new JTextField(5);
         maxPriceField.setToolTipText("Максимална цена");
+        maxPriceField.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         // Бутони
         searchButton = new JButton("Търси");
@@ -86,18 +92,36 @@ public class SearchFilterPanel extends JPanel {
         resetButton.setForeground(Color.BLACK);
         
         // Добавяне на компонентите към панела
-        add(new JLabel("Търсене:"));
+        JLabel searchLabel = new JLabel("Търсене:");
+        searchLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(searchLabel);
         add(searchField);
-        add(new JLabel("Марка:"));
+        
+        JLabel brandLabel = new JLabel("Марка:");
+        brandLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(brandLabel);
         add(brandCombo);
-        add(new JLabel("Тип:"));
+        
+        JLabel typeLabel = new JLabel("Тип:");
+        typeLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(typeLabel);
         add(typeCombo);
-        add(new JLabel("Състояние:"));
+        
+        JLabel conditionLabel = new JLabel("Състояние:");
+        conditionLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(conditionLabel);
         add(conditionCombo);
-        add(new JLabel("Цена от:"));
+        
+        JLabel minPriceLabel = new JLabel("Цена от:");
+        minPriceLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(minPriceLabel);
         add(minPriceField);
-        add(new JLabel("до:"));
+        
+        JLabel maxPriceLabel = new JLabel("до:");
+        maxPriceLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(maxPriceLabel);
         add(maxPriceField);
+        
         add(searchButton);
         add(resetButton);
     }

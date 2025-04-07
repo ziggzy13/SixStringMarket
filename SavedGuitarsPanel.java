@@ -30,7 +30,7 @@ public class SavedGuitarsPanel extends JPanel {
         this.savedGuitarService = new SavedGuitarService();
         
         setLayout(new BorderLayout());
-        setBackground(Constants.BACKGROUND_COLOR);
+        setBackground(Constants.PANEL_COLOR); // Бял фон
         
         initComponents();
         
@@ -44,7 +44,7 @@ public class SavedGuitarsPanel extends JPanel {
     private void initComponents() {
         // Заглавие на панела
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(Constants.BACKGROUND_COLOR);
+        titlePanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         JLabel titleLabel = new JLabel("Запазени китари", JLabel.LEFT);
         titleLabel.setFont(Constants.TITLE_FONT);
@@ -56,7 +56,7 @@ public class SavedGuitarsPanel extends JPanel {
         // Панел за списъка с китари
         guitarsPanel = new JPanel();
         guitarsPanel.setLayout(new BoxLayout(guitarsPanel, BoxLayout.Y_AXIS));
-        guitarsPanel.setBackground(Constants.BACKGROUND_COLOR);
+        guitarsPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         JScrollPane scrollPane = new JScrollPane(guitarsPanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -77,6 +77,7 @@ public class SavedGuitarsPanel extends JPanel {
         if (!AuthenticationService.getInstance().isAuthenticated()) {
             JLabel notLoggedInLabel = new JLabel("Моля, влезте в системата, за да видите запазените китари");
             notLoggedInLabel.setFont(Constants.DEFAULT_FONT);
+            notLoggedInLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
             notLoggedInLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             guitarsPanel.add(Box.createVerticalStrut(50));
             guitarsPanel.add(notLoggedInLabel);
@@ -95,6 +96,7 @@ public class SavedGuitarsPanel extends JPanel {
         if (savedGuitars.isEmpty()) {
             JLabel noGuitarsLabel = new JLabel("Нямате запазени китари");
             noGuitarsLabel.setFont(Constants.DEFAULT_FONT);
+            noGuitarsLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
             noGuitarsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             guitarsPanel.add(Box.createVerticalStrut(50));
             guitarsPanel.add(noGuitarsLabel);
@@ -111,7 +113,7 @@ public class SavedGuitarsPanel extends JPanel {
                     removeButton.addActionListener(e -> removeFromSaved(savedGuitar.getGuitarId()));
                     
                     JPanel cardPanel = new JPanel(new BorderLayout());
-                    cardPanel.setBackground(Constants.BACKGROUND_COLOR);
+                    cardPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
                     cardPanel.add(card, BorderLayout.CENTER);
                     
                     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));

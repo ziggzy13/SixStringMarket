@@ -38,7 +38,7 @@ public class UserProfilePanel extends JPanel {
         this.currentUser = AuthenticationService.getInstance().getCurrentUser();
         
         setLayout(new BorderLayout());
-        setBackground(Constants.BACKGROUND_COLOR);
+        setBackground(Constants.PANEL_COLOR); // Бял фон
         
         initComponents();
     }
@@ -50,10 +50,11 @@ public class UserProfilePanel extends JPanel {
         // Проверка дали има влязъл потребител
         if (!AuthenticationService.getInstance().isAuthenticated()) {
             JPanel messagePanel = new JPanel(new BorderLayout());
-            messagePanel.setBackground(Constants.BACKGROUND_COLOR);
+            messagePanel.setBackground(Constants.PANEL_COLOR); // Бял фон
             
             JLabel notLoggedInLabel = new JLabel("Моля, влезте в системата, за да видите профила си", JLabel.CENTER);
             notLoggedInLabel.setFont(Constants.DEFAULT_FONT);
+            notLoggedInLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
             messagePanel.add(notLoggedInLabel, BorderLayout.CENTER);
             
             add(messagePanel, BorderLayout.CENTER);
@@ -62,7 +63,7 @@ public class UserProfilePanel extends JPanel {
         
         // Заглавие на панела
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(Constants.BACKGROUND_COLOR);
+        titlePanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         JLabel titleLabel = new JLabel("Профил", JLabel.LEFT);
         titleLabel.setFont(Constants.TITLE_FONT);
@@ -74,43 +75,58 @@ public class UserProfilePanel extends JPanel {
         // Главен панел
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBackground(Constants.BACKGROUND_COLOR);
+        mainPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
         // Информация за потребителя
         JPanel infoPanel = new JPanel(new GridLayout(5, 2, 10, 10));
-        infoPanel.setBackground(Constants.BACKGROUND_COLOR);
+        infoPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         // Потребителско име
-        infoPanel.add(new JLabel("Потребителско име:"));
+        JLabel usernameLabel = new JLabel("Потребителско име:");
+        usernameLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        infoPanel.add(usernameLabel);
         usernameField = new JTextField(currentUser.getUsername());
         usernameField.setEditable(false); // Не позволяваме промяна на потребителско име
+        usernameField.setForeground(Constants.TEXT_COLOR); // Черен текст
         infoPanel.add(usernameField);
         
         // Имейл
-        infoPanel.add(new JLabel("Имейл:"));
+        JLabel emailLabel = new JLabel("Имейл:");
+        emailLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        infoPanel.add(emailLabel);
         emailField = new JTextField(currentUser.getEmail());
+        emailField.setForeground(Constants.TEXT_COLOR); // Черен текст
         infoPanel.add(emailField);
         
         // Телефон
-        infoPanel.add(new JLabel("Телефон:"));
+        JLabel phoneLabel = new JLabel("Телефон:");
+        phoneLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        infoPanel.add(phoneLabel);
         phoneField = new JTextField(currentUser.getPhone() != null ? currentUser.getPhone() : "");
+        phoneField.setForeground(Constants.TEXT_COLOR); // Черен текст
         infoPanel.add(phoneField);
         
         // Дата на регистрация
-        infoPanel.add(new JLabel("Дата на регистрация:"));
+        JLabel registrationDateTitleLabel = new JLabel("Дата на регистрация:");
+        registrationDateTitleLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        infoPanel.add(registrationDateTitleLabel);
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
         JLabel registrationDateLabel = new JLabel(dateFormat.format(currentUser.getRegistrationDate()));
+        registrationDateLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
         infoPanel.add(registrationDateLabel);
         
         // Роля
-        infoPanel.add(new JLabel("Роля:"));
+        JLabel roleTitleLabel = new JLabel("Роля:");
+        roleTitleLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        infoPanel.add(roleTitleLabel);
         JLabel roleLabel = new JLabel(currentUser.getRole() == User.UserRole.ADMIN ? "Администратор" : "Потребител");
+        roleLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
         infoPanel.add(roleLabel);
         
         // Панел с фиксирана ширина
         JPanel infoPanelContainer = new JPanel(new BorderLayout());
-        infoPanelContainer.setBackground(Constants.BACKGROUND_COLOR);
+        infoPanelContainer.setBackground(Constants.PANEL_COLOR); // Бял фон
         infoPanelContainer.add(infoPanel, BorderLayout.NORTH);
         
         mainPanel.add(infoPanelContainer);
@@ -118,13 +134,17 @@ public class UserProfilePanel extends JPanel {
         
         // Адрес
         JPanel addressPanel = new JPanel(new BorderLayout());
-        addressPanel.setBackground(Constants.BACKGROUND_COLOR);
-        addressPanel.add(new JLabel("Адрес:"), BorderLayout.NORTH);
+        addressPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
+        
+        JLabel addressTitleLabel = new JLabel("Адрес:");
+        addressTitleLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        addressPanel.add(addressTitleLabel, BorderLayout.NORTH);
         
         addressArea = new JTextArea(4, 20);
         addressArea.setText(currentUser.getAddress() != null ? currentUser.getAddress() : "");
         addressArea.setLineWrap(true);
         addressArea.setWrapStyleWord(true);
+        addressArea.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         JScrollPane addressScrollPane = new JScrollPane(addressArea);
         addressPanel.add(addressScrollPane, BorderLayout.CENTER);
@@ -134,7 +154,7 @@ public class UserProfilePanel extends JPanel {
         
         // Бутони
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        buttonPanel.setBackground(Constants.BACKGROUND_COLOR);
+        buttonPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         updateButton = new JButton("Запази промените");
         updateButton.setBackground(Constants.PRIMARY_COLOR);
@@ -221,16 +241,30 @@ public class UserProfilePanel extends JPanel {
      */
     private void showChangePasswordDialog() {
         JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
+        panel.setBackground(Constants.PANEL_COLOR); // Бял фон
+        
+        JLabel oldPasswordLabel = new JLabel("Текуща парола:");
+        oldPasswordLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        panel.add(oldPasswordLabel);
         
         JPasswordField oldPasswordField = new JPasswordField();
-        JPasswordField newPasswordField = new JPasswordField();
-        JPasswordField confirmPasswordField = new JPasswordField();
-        
-        panel.add(new JLabel("Текуща парола:"));
+        oldPasswordField.setForeground(Constants.TEXT_COLOR); // Черен текст
         panel.add(oldPasswordField);
-        panel.add(new JLabel("Нова парола:"));
+        
+        JLabel newPasswordLabel = new JLabel("Нова парола:");
+        newPasswordLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        panel.add(newPasswordLabel);
+        
+        JPasswordField newPasswordField = new JPasswordField();
+        newPasswordField.setForeground(Constants.TEXT_COLOR); // Черен текст
         panel.add(newPasswordField);
-        panel.add(new JLabel("Потвърдете новата парола:"));
+        
+        JLabel confirmPasswordLabel = new JLabel("Потвърдете новата парола:");
+        confirmPasswordLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        panel.add(confirmPasswordLabel);
+        
+        JPasswordField confirmPasswordField = new JPasswordField();
+        confirmPasswordField.setForeground(Constants.TEXT_COLOR); // Черен текст
         panel.add(confirmPasswordField);
         
         int result = JOptionPane.showConfirmDialog(this, panel, "Смяна на парола", 

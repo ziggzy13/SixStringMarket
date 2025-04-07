@@ -4,6 +4,7 @@ import com.sixstringmarket.util.BankTransferPayment;
 import com.sixstringmarket.util.CashOnDeliveryPayment;
 import com.sixstringmarket.util.CreditCardPayment;
 import com.sixstringmarket.util.PaymentMethod;
+import com.sixstringmarket.util.Constants;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -90,6 +91,7 @@ public class PaymentPanel extends JPanel {
 
 		JLabel methodLabel = new JLabel("Изберете метод на плащане:");
 		methodLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+		methodLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
 
 		// Combo box за избор на метод на плащане
 		paymentMethodComboBox = new JComboBox<>();
@@ -98,6 +100,7 @@ public class PaymentPanel extends JPanel {
 		paymentMethodComboBox.addItem(bankTransferPayment);
 		paymentMethodComboBox.setFont(new Font("Arial", Font.PLAIN, 14));
 		paymentMethodComboBox.setPreferredSize(new Dimension(300, 30));
+		paymentMethodComboBox.setForeground(Constants.TEXT_COLOR); // Черен текст
 		paymentMethodComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -152,6 +155,7 @@ public class PaymentPanel extends JPanel {
 		}
 		cardNumberField.setFont(new Font("Arial", Font.PLAIN, 14));
 		cardNumberField.setPreferredSize(new Dimension(250, 30));
+		cardNumberField.setForeground(Constants.TEXT_COLOR); // Черен текст
 		cardNumberPanel.add(cardNumberField);
 
 		// Име на картодържателя
@@ -159,6 +163,7 @@ public class PaymentPanel extends JPanel {
 		cardHolderField = new JTextField();
 		cardHolderField.setFont(new Font("Arial", Font.PLAIN, 14));
 		cardHolderField.setPreferredSize(new Dimension(250, 30));
+		cardHolderField.setForeground(Constants.TEXT_COLOR); // Черен текст
 		cardHolderPanel.add(cardHolderField);
 
 		// Панел за срок на валидност и CVV
@@ -179,6 +184,7 @@ public class PaymentPanel extends JPanel {
 		}
 		expiryDateField.setFont(new Font("Arial", Font.PLAIN, 14));
 		expiryDateField.setPreferredSize(new Dimension(80, 30));
+		expiryDateField.setForeground(Constants.TEXT_COLOR); // Черен текст
 		expiryPanel.add(expiryDateField);
 
 		// CVV код
@@ -187,6 +193,7 @@ public class PaymentPanel extends JPanel {
 		cvvField = new JPasswordField();
 		cvvField.setFont(new Font("Arial", Font.PLAIN, 14));
 		cvvField.setPreferredSize(new Dimension(60, 30));
+		cvvField.setForeground(Constants.TEXT_COLOR); // Черен текст
 		cvvPanel.add(cvvField);
 
 		expiryAndCvvPanel.add(expiryPanel);
@@ -198,10 +205,9 @@ public class PaymentPanel extends JPanel {
 		securityInfoPanel.setBackground(Color.WHITE);
 		securityInfoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-		JLabel securityLabel = new JLabel("<html><body>Вашите данни са защитени с SSL шифроване.<br>"
-				+ "Ние не съхраняваме данните от вашата кредитна карта.</body></html>");
+		JLabel securityLabel = new JLabel("<html><body style='color: #646464;'>Вашите данни са защитени с SSL шифроване.<br>" +
+				"Ние не съхраняваме данните от вашата кредитна карта.</body></html>");
 		securityLabel.setFont(new Font("Arial", Font.ITALIC, 12));
-		securityLabel.setForeground(new Color(100, 100, 100));
 
 		securityInfoPanel.add(securityLabel);
 
@@ -234,6 +240,7 @@ public class PaymentPanel extends JPanel {
 		addressField = new JTextField();
 		addressField.setFont(new Font("Arial", Font.PLAIN, 14));
 		addressField.setPreferredSize(new Dimension(350, 30));
+		addressField.setForeground(Constants.TEXT_COLOR); // Черен текст
 		addressPanel.add(addressField);
 
 		// Име на получателя
@@ -241,6 +248,7 @@ public class PaymentPanel extends JPanel {
 		recipientNameField = new JTextField();
 		recipientNameField.setFont(new Font("Arial", Font.PLAIN, 14));
 		recipientNameField.setPreferredSize(new Dimension(350, 30));
+		recipientNameField.setForeground(Constants.TEXT_COLOR); // Черен текст
 		namePanel.add(recipientNameField);
 
 		// Телефон на получателя
@@ -248,6 +256,7 @@ public class PaymentPanel extends JPanel {
 		recipientPhoneField = new JTextField();
 		recipientPhoneField.setFont(new Font("Arial", Font.PLAIN, 14));
 		recipientPhoneField.setPreferredSize(new Dimension(350, 30));
+		recipientPhoneField.setForeground(Constants.TEXT_COLOR); // Черен текст
 		phonePanel.add(recipientPhoneField);
 
 		// Информация за таксата
@@ -258,8 +267,8 @@ public class PaymentPanel extends JPanel {
 		BigDecimal fee = cashOnDeliveryPayment.getProcessingFee();
 		BigDecimal totalWithFee = orderTotal.add(fee);
 
-		JLabel feeLabel = new JLabel("<html><body>Такса за наложен платеж: <b>" + fee + " лв.</b><br>"
-				+ "Обща сума за плащане: <b>" + totalWithFee + " лв.</b></body></html>");
+		JLabel feeLabel = new JLabel("<html><body style='color: #212121;'>Такса за наложен платеж: <b>" + fee + " лв.</b><br>" +
+				"Обща сума за плащане: <b>" + totalWithFee + " лв.</b></body></html>");
 		feeLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
 		feeInfoPanel.add(feeLabel);
@@ -294,6 +303,7 @@ public class PaymentPanel extends JPanel {
 		customerNameField = new JTextField();
 		customerNameField.setFont(new Font("Arial", Font.PLAIN, 14));
 		customerNameField.setPreferredSize(new Dimension(350, 30));
+		customerNameField.setForeground(Constants.TEXT_COLOR); // Черен текст
 		namePanel.add(customerNameField);
 
 		// Инструкции за банков превод
@@ -304,14 +314,16 @@ public class PaymentPanel extends JPanel {
 
 		JLabel instructionsLabel = new JLabel("Инструкции за банков превод:");
 		instructionsLabel.setFont(new Font("Arial", Font.BOLD, 14));
+		instructionsLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
 		instructionsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		bankInstructionsArea = new JTextArea();
 		bankInstructionsArea.setFont(new Font("Arial", Font.PLAIN, 14));
-		bankInstructionsArea.setEditable(false);
 		bankInstructionsArea.setLineWrap(true);
 		bankInstructionsArea.setWrapStyleWord(true);
+		bankInstructionsArea.setEditable(false);
 		bankInstructionsArea.setBackground(new Color(245, 245, 255));
+		bankInstructionsArea.setForeground(Constants.TEXT_COLOR); // Черен текст
 		bankInstructionsArea
 				.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(200, 200, 220)),
 						BorderFactory.createEmptyBorder(10, 10, 10, 10)));
@@ -349,6 +361,7 @@ public class PaymentPanel extends JPanel {
 
 		JLabel label = new JLabel(labelText + (required ? " *" : ""));
 		label.setFont(new Font("Arial", Font.PLAIN, 14));
+		label.setForeground(Constants.TEXT_COLOR); // Черен текст
 		labelPanel.add(label, BorderLayout.WEST);
 
 		panel.add(labelPanel);

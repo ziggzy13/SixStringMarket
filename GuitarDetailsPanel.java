@@ -57,7 +57,7 @@ public class GuitarDetailsPanel extends JPanel {
         
         // Настройка на панела
         setLayout(new BorderLayout(10, 10));
-        setBackground(Constants.BACKGROUND_COLOR);
+        setBackground(Constants.PANEL_COLOR); // Бял фон
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         // Инициализация на компонентите
@@ -70,7 +70,7 @@ public class GuitarDetailsPanel extends JPanel {
     private void initComponents() {
         // Горен панел с навигация
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Constants.BACKGROUND_COLOR);
+        topPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         JButton backButton = new JButton("« Назад");
         backButton.addActionListener(e -> parentFrame.showGuitarListPanel());
@@ -80,11 +80,11 @@ public class GuitarDetailsPanel extends JPanel {
         
         // Основен панел с информация
         JPanel mainPanel = new JPanel(new BorderLayout(20, 0));
-        mainPanel.setBackground(Constants.BACKGROUND_COLOR);
+        mainPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         // Ляв панел със снимка
         JPanel leftPanel = new JPanel(new BorderLayout());
-        leftPanel.setBackground(Constants.BACKGROUND_COLOR);
+        leftPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         // Зареждане на снимката
         BufferedImage image = null;
@@ -104,6 +104,7 @@ public class GuitarDetailsPanel extends JPanel {
             placeholderPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
             JLabel placeholderLabel = new JLabel("Няма снимка", JLabel.CENTER);
             placeholderLabel.setFont(Constants.DEFAULT_FONT);
+            placeholderLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
             placeholderPanel.add(placeholderLabel);
             leftPanel.add(placeholderPanel, BorderLayout.CENTER);
         }
@@ -113,7 +114,7 @@ public class GuitarDetailsPanel extends JPanel {
         // Десен панел с детайли
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setBackground(Constants.BACKGROUND_COLOR);
+        rightPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         // Заглавие
         JLabel titleLabel = new JLabel(guitar.getTitle());
@@ -129,40 +130,57 @@ public class GuitarDetailsPanel extends JPanel {
         rightPanel.add(priceLabel);
         rightPanel.add(Box.createVerticalStrut(20));
         
-        // Основна информация
-        rightPanel.add(new JLabel("Марка: " + guitar.getBrand()));
+        // Основна информация - всички текстове трябва да са черни
+        JLabel brandLabel = new JLabel("Марка: " + guitar.getBrand());
+        brandLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        rightPanel.add(brandLabel);
         rightPanel.add(Box.createVerticalStrut(5));
         
         if (guitar.getModel() != null && !guitar.getModel().isEmpty()) {
-            rightPanel.add(new JLabel("Модел: " + guitar.getModel()));
+            JLabel modelLabel = new JLabel("Модел: " + guitar.getModel());
+            modelLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+            rightPanel.add(modelLabel);
             rightPanel.add(Box.createVerticalStrut(5));
         }
         
-        rightPanel.add(new JLabel("Тип: " + getGuitarTypeText(guitar.getType())));
+        JLabel typeLabel = new JLabel("Тип: " + getGuitarTypeText(guitar.getType()));
+        typeLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        rightPanel.add(typeLabel);
         rightPanel.add(Box.createVerticalStrut(5));
         
-        rightPanel.add(new JLabel("Състояние: " + getConditionText(guitar.getCondition())));
+        JLabel conditionLabel = new JLabel("Състояние: " + getConditionText(guitar.getCondition()));
+        conditionLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        rightPanel.add(conditionLabel);
         rightPanel.add(Box.createVerticalStrut(5));
         
         if (guitar.getManufacturingYear() != null) {
-            rightPanel.add(new JLabel("Година на производство: " + guitar.getManufacturingYear()));
+            JLabel yearLabel = new JLabel("Година на производство: " + guitar.getManufacturingYear());
+            yearLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+            rightPanel.add(yearLabel);
             rightPanel.add(Box.createVerticalStrut(5));
         }
         
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-        rightPanel.add(new JLabel("Публикувана на: " + dateFormat.format(guitar.getDateAdded())));
+        JLabel dateLabel = new JLabel("Публикувана на: " + dateFormat.format(guitar.getDateAdded()));
+        dateLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        rightPanel.add(dateLabel);
         rightPanel.add(Box.createVerticalStrut(5));
         
-        rightPanel.add(new JLabel("Продавач: " + seller.getUsername()));
+        JLabel sellerLabel = new JLabel("Продавач: " + seller.getUsername());
+        sellerLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        rightPanel.add(sellerLabel);
         rightPanel.add(Box.createVerticalStrut(5));
         
-        rightPanel.add(new JLabel("Статус: " + getStatusText(guitar.getStatus())));
+        JLabel statusLabel = new JLabel("Статус: " + getStatusText(guitar.getStatus()));
+        statusLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        rightPanel.add(statusLabel);
         rightPanel.add(Box.createVerticalStrut(20));
         
         // Описание
         if (guitar.getDescription() != null && !guitar.getDescription().isEmpty()) {
             JLabel descriptionTitle = new JLabel("Описание:");
             descriptionTitle.setFont(Constants.BOLD_FONT);
+            descriptionTitle.setForeground(Constants.TEXT_COLOR); // Черен текст
             rightPanel.add(descriptionTitle);
             rightPanel.add(Box.createVerticalStrut(5));
             
@@ -170,7 +188,8 @@ public class GuitarDetailsPanel extends JPanel {
             descriptionArea.setLineWrap(true);
             descriptionArea.setWrapStyleWord(true);
             descriptionArea.setEditable(false);
-            descriptionArea.setBackground(Constants.BACKGROUND_COLOR);
+            descriptionArea.setBackground(Constants.PANEL_COLOR); // Бял фон
+            descriptionArea.setForeground(Constants.TEXT_COLOR); // Черен текст
             descriptionArea.setFont(Constants.DEFAULT_FONT);
             
             JScrollPane descriptionScroll = new JScrollPane(descriptionArea);
@@ -183,7 +202,7 @@ public class GuitarDetailsPanel extends JPanel {
         
         // Бутони за действия
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        buttonsPanel.setBackground(Constants.BACKGROUND_COLOR);
+        buttonsPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         // Бутоните се показват само ако потребителят е влязъл в системата
         if (currentUser != null) {
@@ -229,14 +248,19 @@ public class GuitarDetailsPanel extends JPanel {
         mainPanel.add(rightPanel, BorderLayout.CENTER);
         
         add(mainPanel, BorderLayout.CENTER);
+        
+        // Добавяне на панел за отзиви
+        JPanel reviewsPanel = createReviewsPanel();
+        add(reviewsPanel, BorderLayout.SOUTH);
     }
+    
     /**
      * Create reviews panel
      */
     private JPanel createReviewsPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(Constants.BACKGROUND_COLOR);
+        panel.setBackground(Constants.PANEL_COLOR); // Бял фон
         panel.setBorder(BorderFactory.createTitledBorder("Customer Reviews"));
         
         // Get reviews
@@ -246,10 +270,11 @@ public class GuitarDetailsPanel extends JPanel {
         // Average rating
         double avgRating = reviewDAO.getAverageRatingForGuitar(guitar.getGuitarId());
         JPanel ratingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        ratingPanel.setBackground(Constants.BACKGROUND_COLOR);
+        ratingPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         JLabel avgRatingLabel = new JLabel(String.format("Average Rating: %.1f/5.0", avgRating));
         avgRatingLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        avgRatingLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
         ratingPanel.add(avgRatingLabel);
         
         // Add rating stars
@@ -272,7 +297,7 @@ public class GuitarDetailsPanel extends JPanel {
             addReviewButton.addActionListener(e -> showAddReviewDialog());
             
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            buttonPanel.setBackground(Constants.BACKGROUND_COLOR);
+            buttonPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
             buttonPanel.add(addReviewButton);
             
             panel.add(buttonPanel);
@@ -283,6 +308,7 @@ public class GuitarDetailsPanel extends JPanel {
         if (reviews.isEmpty()) {
             JLabel noReviewsLabel = new JLabel("No reviews yet");
             noReviewsLabel.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+            noReviewsLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
             noReviewsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
             
             panel.add(noReviewsLabel);
@@ -298,26 +324,28 @@ public class GuitarDetailsPanel extends JPanel {
                     BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
                     BorderFactory.createEmptyBorder(5, 0, 5, 0)
                 ));
-                reviewPanel.setBackground(Constants.BACKGROUND_COLOR);
+                reviewPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
                 
                 // Reviewer and date
                 JPanel headerPanel = new JPanel(new BorderLayout());
-                headerPanel.setBackground(Constants.BACKGROUND_COLOR);
+                headerPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
                 
                 JLabel reviewerLabel = new JLabel(reviewer != null ? reviewer.getUsername() : "Unknown User");
                 reviewerLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+                reviewerLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
                 headerPanel.add(reviewerLabel, BorderLayout.WEST);
                 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
                 JLabel dateLabel = new JLabel(dateFormat.format(review.getReviewDate()));
                 dateLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                dateLabel.setForeground(Constants.TEXT_SECONDARY_COLOR);
                 headerPanel.add(dateLabel, BorderLayout.EAST);
                 
                 reviewPanel.add(headerPanel);
                 
                 // Rating
                 JPanel starsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
-                starsPanel.setBackground(Constants.BACKGROUND_COLOR);
+                starsPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
                 
                 for (int i = 1; i <= 5; i++) {
                     JLabel starLabel = new JLabel(i <= review.getRating() ? "★" : "☆");
@@ -336,7 +364,8 @@ public class GuitarDetailsPanel extends JPanel {
                     commentArea.setLineWrap(true);
                     commentArea.setWrapStyleWord(true);
                     commentArea.setEditable(false);
-                    commentArea.setBackground(Constants.BACKGROUND_COLOR);
+                    commentArea.setBackground(Constants.PANEL_COLOR); // Бял фон
+                    commentArea.setForeground(Constants.TEXT_COLOR); // Черен текст
                     commentArea.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
                     commentArea.setAlignmentX(Component.LEFT_ALIGNMENT);
                     
@@ -362,10 +391,15 @@ public class GuitarDetailsPanel extends JPanel {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        panel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         // Rating
         JPanel ratingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        ratingPanel.add(new JLabel("Rating:"));
+        ratingPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
+        
+        JLabel ratingLabel = new JLabel("Rating:");
+        ratingLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        ratingPanel.add(ratingLabel);
         
         JComboBox<Integer> ratingCombo = new JComboBox<>(new Integer[]{1, 2, 3, 4, 5});
         ratingCombo.setSelectedIndex(4); // Default 5 stars
@@ -376,12 +410,14 @@ public class GuitarDetailsPanel extends JPanel {
         
         // Comment
         JLabel commentLabel = new JLabel("Comment:");
+        commentLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
         commentLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(commentLabel);
         
         JTextArea commentArea = new JTextArea(5, 20);
         commentArea.setLineWrap(true);
         commentArea.setWrapStyleWord(true);
+        commentArea.setForeground(Constants.TEXT_COLOR); // Черен текст
         JScrollPane scrollPane = new JScrollPane(commentArea);
         scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
         
@@ -390,6 +426,7 @@ public class GuitarDetailsPanel extends JPanel {
         
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> reviewDialog.dispose());
@@ -492,41 +529,9 @@ public class GuitarDetailsPanel extends JPanel {
      * Закупуване на китара
      */
     private void purchaseGuitar() {
-    	CheckoutFrame checkoutFrame = new CheckoutFrame(parentFrame, guitar);
+        CheckoutFrame checkoutFrame = new CheckoutFrame(parentFrame, guitar);
         checkoutFrame.setVisible(true);
-        int response = JOptionPane.showConfirmDialog(
-            this,
-            "Сигурни ли сте, че искате да закупите тази китара за " + guitar.getPrice() + " лв.?",
-            "Потвърждение за покупка",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
-        );
-        
-        if (response == JOptionPane.YES_OPTION) {
-            try {
-                boolean success = orderService.createOrder(guitar.getGuitarId(), currentUser.getUserId());
-                
-                if (success) {
-                    JOptionPane.showMessageDialog(
-                        this,
-                        "Поръчката е създадена успешно! Очаквайте потвърждение от продавача.",
-                        "Успешна поръчка",
-                        JOptionPane.INFORMATION_MESSAGE
-                    );
-                    
-                    // Опресняване на детайлите на китарата
-                    guitar = guitarService.getGuitarById(guitar.getGuitarId());
-                    removeAll();
-                    initComponents();
-                    revalidate();
-                    repaint();
-                } else {
-                    showErrorMessage("Грешка при създаване на поръчка. Моля, опитайте отново.");
-                }
-            } catch (IllegalArgumentException ex) {
-                showErrorMessage(ex.getMessage());
-            }
-        }
+        // Диалогът за потвърждение се появява след затваряне на checkoutFrame
     }
     
     /**

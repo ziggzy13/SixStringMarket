@@ -54,7 +54,7 @@ public class CheckoutFrame extends JDialog {
      */
     private void initComponents() {
         contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setBackground(Constants.BACKGROUND_COLOR);
+        contentPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
         
         // Title panel
         JPanel titlePanel = new JPanel(new BorderLayout());
@@ -63,13 +63,13 @@ public class CheckoutFrame extends JDialog {
         
         JLabel titleLabel = new JLabel("Checkout");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setForeground(Color.WHITE); // тук оставяме бял текст върху цветен фон
         
         titlePanel.add(titleLabel, BorderLayout.WEST);
         
         // Close button
         JButton closeButton = new JButton("×");
-        closeButton.setForeground(Color.WHITE);
+        closeButton.setForeground(Color.WHITE); // бял текст върху цветен фон
         closeButton.setFont(new Font("Arial", Font.BOLD, 20));
         closeButton.setBorderPainted(false);
         closeButton.setContentAreaFilled(false);
@@ -83,6 +83,7 @@ public class CheckoutFrame extends JDialog {
         // Tabbed Pane
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tabbedPane.setForeground(Constants.TEXT_COLOR); // Черен текст
         
         // Summary Panel
         summaryPanel = createSummaryPanel();
@@ -126,23 +127,47 @@ public class CheckoutFrame extends JDialog {
         JPanel detailsPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         detailsPanel.setBackground(Color.WHITE);
         
-        detailsPanel.add(new JLabel("Item:"));
-        detailsPanel.add(new JLabel(guitar.getTitle()));
+        // Added setForeground to all JLabels for black text
+        JLabel itemLabel = new JLabel("Item:");
+        itemLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        detailsPanel.add(itemLabel);
         
-        detailsPanel.add(new JLabel("Brand:"));
-        detailsPanel.add(new JLabel(guitar.getBrand() + " " + guitar.getModel()));
+        JLabel itemValueLabel = new JLabel(guitar.getTitle());
+        itemValueLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        detailsPanel.add(itemValueLabel);
         
-        detailsPanel.add(new JLabel("Type:"));
-        detailsPanel.add(new JLabel(getGuitarTypeText(guitar.getType())));
+        JLabel brandLabel = new JLabel("Brand:");
+        brandLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        detailsPanel.add(brandLabel);
         
-        detailsPanel.add(new JLabel("Condition:"));
-        detailsPanel.add(new JLabel(getConditionText(guitar.getCondition())));
+        JLabel brandValueLabel = new JLabel(guitar.getBrand() + " " + guitar.getModel());
+        brandValueLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        detailsPanel.add(brandValueLabel);
         
-        detailsPanel.add(new JLabel("Price:"));
-        JLabel priceLabel = new JLabel(guitar.getPrice() + " лв.");
-        priceLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        priceLabel.setForeground(Constants.SUCCESS_COLOR);
+        JLabel typeLabel = new JLabel("Type:");
+        typeLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        detailsPanel.add(typeLabel);
+        
+        JLabel typeValueLabel = new JLabel(getGuitarTypeText(guitar.getType()));
+        typeValueLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        detailsPanel.add(typeValueLabel);
+        
+        JLabel conditionLabel = new JLabel("Condition:");
+        conditionLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        detailsPanel.add(conditionLabel);
+        
+        JLabel conditionValueLabel = new JLabel(getConditionText(guitar.getCondition()));
+        conditionValueLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
+        detailsPanel.add(conditionValueLabel);
+        
+        JLabel priceLabel = new JLabel("Price:");
+        priceLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
         detailsPanel.add(priceLabel);
+        
+        JLabel priceValueLabel = new JLabel(guitar.getPrice() + " лв.");
+        priceValueLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        priceValueLabel.setForeground(Constants.SUCCESS_COLOR);
+        detailsPanel.add(priceValueLabel);
         
         panel.add(detailsPanel, BorderLayout.CENTER);
         
@@ -238,10 +263,11 @@ public class CheckoutFrame extends JDialog {
         
         JLabel confirmTitleLabel = new JLabel("Confirm Your Order");
         confirmTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        confirmTitleLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
         confirmTitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JLabel confirmMessageLabel = new JLabel(
-            "<html><body style='text-align: center; width: 400px;'>You are about to purchase:<br><br>" +
+            "<html><body style='text-align: center; width: 400px; color: #212121;'>You are about to purchase:<br><br>" +  // Добавен color за черен текст
             "<b>" + guitar.getTitle() + "</b><br>" +
             "Price: <b>" + guitar.getPrice() + " лв.</b><br><br>" +
             "Please confirm to complete your order.</body></html>");
