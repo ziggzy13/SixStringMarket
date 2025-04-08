@@ -11,6 +11,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
 
 /**
@@ -38,8 +40,10 @@ public class SearchFilterPanel extends JPanel {
         this.parentPanel = parentPanel;
         this.searchService = new SearchService();
         
-        setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        setBackground(Constants.PANEL_COLOR); // Бял фон
+        // Използваме GridBagLayout за по-добро подреждане
+        setLayout(new GridBagLayout());
+        setBackground(Constants.BACKGROUND_COLOR);
+        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         
         initComponents();
         addEventListeners();
@@ -49,81 +53,93 @@ public class SearchFilterPanel extends JPanel {
      * Инициализира компонентите на панела
      */
     private void initComponents() {
-        // Поле за търсене
-        searchField = new JTextField(15);
-        searchField.setToolTipText("Търсене по заглавие, марка, модел или описание");
-        searchField.setForeground(Constants.TEXT_COLOR); // Черен текст
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
         
-        // Падащо меню за марка
+        // Първи ред с полетата за търсене
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
+        add(new JLabel("Търсене:"), gbc);
+        
+        gbc.gridx = 1;
+        gbc.weightx = 2.0; // Даваме по-голяма тежест за повече място
+        gbc.gridwidth = 1;
+        // FIX 1: По-голямо поле за търсене с повече колони
+        searchField = new JTextField(30);
+        add(searchField, gbc);
+        
+        gbc.gridx = 2;
+        gbc.weightx = 0;
+        add(new JLabel("Марка:"), gbc);
+        
+        gbc.gridx = 3;
+        gbc.weightx = 1.0;
         brandCombo = new JComboBox<>(Constants.GUITAR_BRANDS);
-        brandCombo.setPreferredSize(new Dimension(120, 25));
         brandCombo.insertItemAt("Всички марки", 0);
         brandCombo.setSelectedIndex(0);
-        brandCombo.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(brandCombo, gbc);
         
-        // Падащо меню за тип
+        gbc.gridx = 4;
+        gbc.weightx = 0;
+        add(new JLabel("Тип:"), gbc);
+        
+        gbc.gridx = 5;
+        gbc.weightx = 1.0;
         String[] types = {"Всички типове", "Акустична", "Електрическа", "Класическа", "Бас", "Друга"};
         typeCombo = new JComboBox<>(types);
-        typeCombo.setPreferredSize(new Dimension(120, 25));
-        typeCombo.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(typeCombo, gbc);
         
-        // Падащо меню за състояние
+        gbc.gridx = 6;
+        gbc.weightx = 0;
+        add(new JLabel("Състояние:"), gbc);
+        
+        gbc.gridx = 7;
+        gbc.weightx = 1.0;
         String[] conditions = {"Всички състояния", "Нова", "Употребявана", "Винтидж"};
         conditionCombo = new JComboBox<>(conditions);
-        conditionCombo.setPreferredSize(new Dimension(120, 25));
-        conditionCombo.setForeground(Constants.TEXT_COLOR); // Черен текст
+        add(conditionCombo, gbc);
         
-        // Полета за цена
-        minPriceField = new JTextField(5);
-        minPriceField.setToolTipText("Минимална цена");
-        minPriceField.setForeground(Constants.TEXT_COLOR); // Черен текст
+        gbc.gridx = 8;
+        gbc.weightx = 0;
+        add(new JLabel("Цена от:"), gbc);
         
-        maxPriceField = new JTextField(5);
-        maxPriceField.setToolTipText("Максимална цена");
-        maxPriceField.setForeground(Constants.TEXT_COLOR); // Черен текст
+        gbc.gridx = 9;
+        gbc.weightx = 1.0;
+        // FIX 2: По-големи полета за цена с повече колони
+        minPriceField = new JTextField(12);
+        add(minPriceField, gbc);
         
-        // Бутони
+        gbc.gridx = 10;
+        gbc.weightx = 0;
+        add(new JLabel("до:"), gbc);
+        
+        gbc.gridx = 11;
+        gbc.weightx = 1.0;
+        // FIX 2: По-големи полета за цена с повече колони
+        maxPriceField = new JTextField(12);
+        add(maxPriceField, gbc);
+        
+        // Бутони на същия ред за максимална компактност
+        gbc.gridx = 12;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(5, 10, 5, 5);
         searchButton = new JButton("Търси");
-        searchButton.setBackground(Constants.PRIMARY_COLOR);
-        searchButton.setForeground(Color.WHITE);
+        searchButton.setBackground(new Color(59, 89, 152)); // Facebook blue
+        // FIX 3: Черен текст на бутона за търсене
+        searchButton.setForeground(Color.BLACK);
+        searchButton.setFocusPainted(false);
+        add(searchButton, gbc);
         
+        gbc.gridx = 13;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(5, 5, 5, 5);
         resetButton = new JButton("Изчисти");
-        resetButton.setBackground(Color.LIGHT_GRAY);
+        resetButton.setBackground(new Color(220, 220, 220));
         resetButton.setForeground(Color.BLACK);
-        
-        // Добавяне на компонентите към панела
-        JLabel searchLabel = new JLabel("Търсене:");
-        searchLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
-        add(searchLabel);
-        add(searchField);
-        
-        JLabel brandLabel = new JLabel("Марка:");
-        brandLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
-        add(brandLabel);
-        add(brandCombo);
-        
-        JLabel typeLabel = new JLabel("Тип:");
-        typeLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
-        add(typeLabel);
-        add(typeCombo);
-        
-        JLabel conditionLabel = new JLabel("Състояние:");
-        conditionLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
-        add(conditionLabel);
-        add(conditionCombo);
-        
-        JLabel minPriceLabel = new JLabel("Цена от:");
-        minPriceLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
-        add(minPriceLabel);
-        add(minPriceField);
-        
-        JLabel maxPriceLabel = new JLabel("до:");
-        maxPriceLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
-        add(maxPriceLabel);
-        add(maxPriceField);
-        
-        add(searchButton);
-        add(resetButton);
+        resetButton.setFocusPainted(false);
+        add(resetButton, gbc);
     }
     
     /**
@@ -143,6 +159,16 @@ public class SearchFilterPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 resetFilters();
+            }
+        });
+        
+        // Действие при натискане на Enter в полето за търсене
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    searchGuitars();
+                }
             }
         });
     }

@@ -61,47 +61,61 @@ public class GuitarListPanel extends JPanel {
      * Инициализира компонентите на панела
      */
     private void initComponents() {
-        // Заглавие на панела
-        JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(Constants.PANEL_COLOR); // Бял фон
+        // Използваме BorderLayout за главния панел
+        setLayout(new BorderLayout(0, 0));
+        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        setBackground(Constants.BACKGROUND_COLOR);
         
-        String title = (sellerId == 0) ? "Всички китари" : "Моите обяви";
-        JLabel titleLabel = new JLabel(title, JLabel.LEFT);
+        // Панел за заглавието
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(Constants.BACKGROUND_COLOR);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
+        
+        String titleText = (sellerId == 0) ? "Всички китари" : "Моите обяви";
+        JLabel titleLabel = new JLabel(titleText, JLabel.LEFT);
         titleLabel.setFont(Constants.TITLE_FONT);
         titleLabel.setForeground(Constants.PRIMARY_COLOR);
         titlePanel.add(titleLabel, BorderLayout.WEST);
         
-        // Ако това е списък с всички китари, добавяме панел за търсене
-        if (sellerId == 0) {
-            searchFilterPanel = new SearchFilterPanel(this);
-            titlePanel.add(searchFilterPanel, BorderLayout.CENTER);
-        }
-        
-        // Бутон за добавяне на нова китара
-        if (AuthenticationService.getInstance().isAuthenticated()) {
-            JButton addGuitarButton = new JButton("Добави китара");
-            addGuitarButton.setBackground(Constants.ACCENT_COLOR);
-            addGuitarButton.setForeground(Color.WHITE);
-            addGuitarButton.addActionListener(e -> parentFrame.showAddGuitarFrame());
-            titlePanel.add(addGuitarButton, BorderLayout.EAST);
-        }
-        
         add(titlePanel, BorderLayout.NORTH);
+        
+        // Контейнер за филтър и съдържание
+        JPanel contentPanel = new JPanel(new BorderLayout(0, 0));
+        contentPanel.setBackground(Constants.BACKGROUND_COLOR);
+        
+        // Добавяне на филтъра само когато показваме всички китари
+        if (sellerId == 0) {
+            // Създаване на панел за филтъра със специфичен стил
+            JPanel filterPanel = new JPanel(new BorderLayout());
+            filterPanel.setBackground(Constants.BACKGROUND_COLOR);
+            filterPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 1, 0, new Color(220, 220, 220)),
+                BorderFactory.createEmptyBorder(0, 10, 0, 10)
+            ));
+            
+            // Добавяне на филтър компонента
+            searchFilterPanel = new SearchFilterPanel(this);
+            filterPanel.add(searchFilterPanel, BorderLayout.CENTER);
+            
+            contentPanel.add(filterPanel, BorderLayout.NORTH);
+        }
         
         // Панел за списъка с китари
         guitarsPanel = new JPanel();
         guitarsPanel.setLayout(new BoxLayout(guitarsPanel, BoxLayout.Y_AXIS));
-        guitarsPanel.setBackground(Constants.PANEL_COLOR); // Бял фон
+        guitarsPanel.setBackground(Constants.BACKGROUND_COLOR);
         
         JScrollPane scrollPane = new JScrollPane(guitarsPanel);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.setBackground(Constants.BACKGROUND_COLOR);
         
-        add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        add(contentPanel, BorderLayout.CENTER);
     }
-    
     /**
      * Зарежда китарите от базата данни
      */
