@@ -1,7 +1,6 @@
 package com.sixstringmarket.ui.components;
 
 import com.sixstringmarket.util.Constants;
-import com.sixstringmarket.util.ColorScheme;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,7 +10,7 @@ import java.awt.event.FocusListener;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Modern text field with focus animation and placeholder
+ * Модерно текстово поле с анимация при focus и placeholder
  */
 public class ModernTextField extends JTextField {
     
@@ -20,19 +19,20 @@ public class ModernTextField extends JTextField {
     private boolean isRound;
     private Color borderColor;
     private Color focusBorderColor;
+    private Dimension customDimension;
     
     /**
-     * Create modern text field
-     * @param columns Number of columns
+     * Създава модерно текстово поле
+     * @param columns Брой колони
      */
     public ModernTextField(int columns) {
         this(null, columns);
     }
     
     /**
-     * Create modern text field with placeholder
-     * @param placeholder Placeholder text
-     * @param columns Number of columns
+     * Създава модерно текстово поле с placeholder
+     * @param placeholder Текст за подсказка
+     * @param columns Брой колони
      */
     public ModernTextField(String placeholder, int columns) {
         super(columns);
@@ -41,23 +41,42 @@ public class ModernTextField extends JTextField {
         this.isRound = true;
         this.borderColor = new Color(220, 220, 220);
         this.focusBorderColor = Constants.PRIMARY_COLOR;
+        this.customDimension = Constants.TEXT_FIELD_DIMENSION; // Стандартен размер по подразбиране
         
         setup();
     }
     
     /**
-     * Initialize styles and events
+     * Създава модерно текстово поле с персонализиран размер
+     * @param placeholder Текст за подсказка
+     * @param columns Брой колони
+     * @param dimension Персонализиран размер
+     */
+    public ModernTextField(String placeholder, int columns, Dimension dimension) {
+        super(columns);
+        this.placeholder = placeholder;
+        this.placeholderColor = Constants.TEXT_SECONDARY_COLOR;
+        this.isRound = true;
+        this.borderColor = new Color(220, 220, 220);
+        this.focusBorderColor = Constants.PRIMARY_COLOR;
+        this.customDimension = dimension;
+        
+        setup();
+    }
+    
+    /**
+     * Инициализира стиловете и събитията на текстовото поле
      */
     private void setup() {
-        // Appearance configuration
+        // Настройка на външния вид
         setFont(Constants.DEFAULT_FONT);
-        setForeground(Constants.TEXT_COLOR); // Using black text on white/light background
+        setForeground(Constants.TEXT_COLOR);
         setBackground(Color.WHITE);
-        setCaretColor(Constants.TEXT_COLOR); // Black caret on white background
+        setCaretColor(Constants.TEXT_COLOR);
         setBorder(new EmptyBorder(10, 15, 10, 15));
-        setPreferredSize(Constants.TEXT_FIELD_DIMENSION);
+        setPreferredSize(customDimension);
         
-        // Add placeholder and focus effects
+        // Добавяне на подсказка и ефекти при focus
         addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -72,14 +91,14 @@ public class ModernTextField extends JTextField {
     }
     
     /**
-     * Custom text field painting
+     * Персонализирано рисуване на текстовото поле
      */
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        // Draw background
+        // Рисуване на фона
         g2d.setColor(getBackground());
         if (isRound) {
             g2d.fill(new RoundRectangle2D.Double(
@@ -89,7 +108,7 @@ public class ModernTextField extends JTextField {
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
         
-        // Draw border
+        // Рисуване на границата
         g2d.setColor(isFocusOwner() ? focusBorderColor : borderColor);
         int borderWidth = isFocusOwner() ? 2 : 1;
         
@@ -109,27 +128,25 @@ public class ModernTextField extends JTextField {
         
         super.paintComponent(g);
         
-        // Draw placeholder text when empty
+        // Рисуване на placeholder
         if (placeholder != null && getText().isEmpty() && !isFocusOwner()) {
             g = getGraphics();
-            if (g != null) {
-                g.setColor(placeholderColor);
-                g.setFont(getFont());
-                
-                // Calculate position
-                FontMetrics fm = g.getFontMetrics();
-                int x = getInsets().left;
-                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-                
-                g.drawString(placeholder, x, y);
-                g.dispose();
-            }
+            g.setColor(placeholderColor);
+            g.setFont(getFont());
+            
+            // Изчисляване на позицията
+            FontMetrics fm = g.getFontMetrics();
+            int x = getInsets().left;
+            int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+            
+            g.drawString(placeholder, x, y);
+            g.dispose();
         }
     }
     
     /**
-     * Set placeholder text
-     * @param placeholder Placeholder text
+     * Задава текст за подсказка
+     * @param placeholder Текст за подсказка
      */
     public void setPlaceholder(String placeholder) {
         this.placeholder = placeholder;
@@ -137,8 +154,8 @@ public class ModernTextField extends JTextField {
     }
     
     /**
-     * Set placeholder text color
-     * @param color Color
+     * Задава цвят на текста за подсказка
+     * @param color Цвят
      */
     public void setPlaceholderColor(Color color) {
         this.placeholderColor = color;
@@ -146,8 +163,8 @@ public class ModernTextField extends JTextField {
     }
     
     /**
-     * Set whether field has rounded corners
-     * @param isRound Flag whether field has rounded corners
+     * Задава дали полето е със заоблени ъгли
+     * @param isRound Флаг дали полето е със заоблени ъгли
      */
     public void setRound(boolean isRound) {
         this.isRound = isRound;
@@ -155,8 +172,8 @@ public class ModernTextField extends JTextField {
     }
     
     /**
-     * Set border color
-     * @param color Color
+     * Задава цвят на границата
+     * @param color Цвят
      */
     public void setBorderColor(Color color) {
         this.borderColor = color;
@@ -164,11 +181,39 @@ public class ModernTextField extends JTextField {
     }
     
     /**
-     * Set focus border color
-     * @param color Color
+     * Задава цвят на границата при focus
+     * @param color Цвят
      */
     public void setFocusBorderColor(Color color) {
         this.focusBorderColor = color;
         repaint();
+    }
+    
+    /**
+     * Задава персонализиран размер
+     * @param dimension Размер
+     */
+    public void setCustomDimension(Dimension dimension) {
+        this.customDimension = dimension;
+        setPreferredSize(dimension);
+        revalidate();
+    }
+    
+    /**
+     * Създава текстово поле за търсене
+     * @param placeholder Текст за подсказка
+     * @return Текстово поле с размер за търсене
+     */
+    public static ModernTextField createSearchField(String placeholder) {
+        return new ModernTextField(placeholder, 30, Constants.SEARCH_FIELD_DIMENSION);
+    }
+    
+    /**
+     * Създава текстово поле за цена
+     * @param placeholder Текст за подсказка
+     * @return Текстово поле с размер за цена
+     */
+    public static ModernTextField createPriceField(String placeholder) {
+        return new ModernTextField(placeholder, 10, Constants.PRICE_FIELD_DIMENSION);
     }
 }

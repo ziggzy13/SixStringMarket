@@ -1,14 +1,14 @@
 package com.sixstringmarket.service;
 
+import com.sixstringmarket.dao.GuitarDAO;
 import com.sixstringmarket.model.Guitar;
 import com.sixstringmarket.model.Guitar.GuitarType;
 import com.sixstringmarket.model.Guitar.Condition;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Сервизен клас за търсене и филтриране на китари
@@ -29,6 +29,10 @@ public class SearchService {
      * @return Списък с намерени китари
      */
     public List<Guitar> searchByKeyword(String keyword) {
+        // Нормализиране на ключовата дума преди търсене
+        if (keyword != null) {
+            keyword = normalizeSearchTerm(keyword);
+        }
         return guitarService.searchGuitars(keyword, null, null, null, null, null);
     }
     
@@ -82,6 +86,11 @@ public class SearchService {
     public List<Guitar> search(String keyword, GuitarType type, String brand, 
                          BigDecimal minPrice, BigDecimal maxPrice, Condition condition) {
         
+        // Нормализиране на ключовата дума преди търсене
+        if (keyword != null) {
+            keyword = normalizeSearchTerm(keyword);
+        }
+        
         return guitarService.searchGuitars(keyword, type, brand, minPrice, maxPrice, condition);
     }
     
@@ -89,9 +98,9 @@ public class SearchService {
      * Получаване на уникални марки от наличните китари (за филтри)
      * @return Множество с уникални марки
      */
-    public Set<String> getAvailableBrands() {
+    public java.util.Set<String> getAvailableBrands() {
         List<Guitar> allGuitars = guitarService.getAllActiveGuitars();
-        Set<String> brands = new HashSet<>();
+        java.util.Set<String> brands = new java.util.HashSet<>();
         
         for (Guitar guitar : allGuitars) {
             if (guitar.getBrand() != null && !guitar.getBrand().isEmpty()) {
@@ -100,5 +109,26 @@ public class SearchService {
         }
         
         return brands;
+    }
+    
+    /**
+     * Нормализира терма за търсене - премахва ненужни интервали,
+     * и прави други корекции за по-добри резултати от търсенето
+     * @param searchTerm Терм за търсене
+     * @return Нормализиран терм
+     */
+    private String normalizeSearchTerm(String searchTerm) {
+        if (searchTerm == null) {
+            return null;
+        }
+        
+        // Премахване на множество интервали
+        searchTerm = searchTerm.trim().replaceAll("\\s+", " ");
+        
+        // Нормализиране на инициали - премахване на интервали между инициали
+        // Например "B. C. Rich" -> "B.C. Rich"
+        searchTerm = searchTerm.replaceAll("(\\w)\\.(\\s+)(\\w)\\.", "$1.$3.");
+        
+        return searchTerm;
     }
 }
