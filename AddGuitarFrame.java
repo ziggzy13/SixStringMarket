@@ -87,14 +87,18 @@ public class AddGuitarFrame extends JDialog {
         imagePathField.setEditable(false);
         
         browseButton = new JButton("Избери снимка");
+        // Changed foreground color from WHITE to BLACK
+        browseButton.setForeground(Color.BLACK);
         
         addButton = new JButton("Добави");
         addButton.setBackground(Constants.PRIMARY_COLOR);
-        addButton.setForeground(Color.WHITE);
+        // Changed foreground color from WHITE to BLACK
+        addButton.setForeground(Color.BLACK);
         
         cancelButton = new JButton("Отказ");
         cancelButton.setBackground(Color.GRAY);
-        cancelButton.setForeground(Color.WHITE);
+        // Changed foreground color from WHITE to BLACK
+        cancelButton.setForeground(Color.BLACK);
     }
     
     /**
