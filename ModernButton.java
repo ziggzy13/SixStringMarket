@@ -9,74 +9,67 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Modern button with styling and hover effects
+ * Modern styled button with hover and pressed effects
  */
 public class ModernButton extends JButton {
-    private Color backgroundColor;
+    
+    // Button styles
+    public enum ButtonStyle {
+        PRIMARY, SECONDARY, SUCCESS, DANGER, INFO, WARNING
+    }
+    
+    private ButtonStyle style;
+    private boolean isHovered = false;
+    private boolean isRound = true;
+    private Color mainColor;
     private Color hoverColor;
     private Color pressedColor;
-    private boolean isRound;
-    private boolean isHovered;
-    private boolean isPressed;
     
     /**
-     * Creates a primary button
-     * 
+     * Constructor with text
      * @param text Button text
      */
     public ModernButton(String text) {
-        this(text, StyleManager.BUTTON_PRIMARY_COLOR, Color.WHITE, true);
+        this(text, ButtonStyle.PRIMARY);
     }
     
     /**
-     * Creates a button with custom colors
-     * 
+     * Constructor with text and style
      * @param text Button text
-     * @param isAccent Whether to use accent color
+     * @param style Button style
      */
-    public ModernButton(String text, boolean isAccent) {
-        this(text, isAccent ? StyleManager.SECONDARY_COLOR : StyleManager.BUTTON_SECONDARY_COLOR, 
-             Color.WHITE, true);
-    }
-    
-    /**
-     * Creates a button with fully custom styling
-     * 
-     * @param text Button text
-     * @param backgroundColor Button background color
-     * @param textColor Button text color
-     * @param isRound Whether to use rounded corners
-     */
-    public ModernButton(String text, Color backgroundColor, Color textColor, boolean isRound) {
+    public ModernButton(String text, ButtonStyle style) {
         super(text);
-        this.backgroundColor = backgroundColor;
-        this.hoverColor = StyleManager.lighten(backgroundColor, 0.1f);
-        this.pressedColor = StyleManager.darken(backgroundColor, 0.1f);
-        this.isRound = isRound;
-        this.isHovered = false;
-        this.isPressed = false;
+        this.style = style;
         
-        setup();
+        // Initialize colors based on style
+        setButtonStyle(style);
+        
+        setupButton();
     }
     
     /**
-     * Setup the button styling and event handlers
+     * Set up button appearance and behavior
      */
-    private void setup() {
-        setFont(StyleManager.DEFAULT_FONT);
-        setForeground(Color.WHITE);
+    private void setupButton() {
+        // Set button appearance
         setBorderPainted(false);
         setFocusPainted(false);
         setContentAreaFilled(false);
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
         setOpaque(false);
+        setForeground(Color.WHITE);
+        setFont(StyleManager.DEFAULT_FONT);
         
-        // Add hover/press effects
+        // Set preferred size
+        setPreferredSize(new Dimension(120, 36));
+        
+        // Add mouse listeners for hover and pressed effects
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 if (isEnabled()) {
                     isHovered = true;
+                    setCursor(new Cursor(Cursor.HAND_CURSOR));
                     repaint();
                 }
             }
@@ -84,102 +77,135 @@ public class ModernButton extends JButton {
             @Override
             public void mouseExited(MouseEvent e) {
                 isHovered = false;
-                isPressed = false;
+                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 repaint();
             }
             
             @Override
             public void mousePressed(MouseEvent e) {
-                if (isEnabled()) {
-                    isPressed = true;
+                if (isEnabled() && SwingUtilities.isLeftMouseButton(e)) {
                     repaint();
                 }
             }
             
             @Override
             public void mouseReleased(MouseEvent e) {
-                isPressed = false;
                 repaint();
             }
         });
     }
     
+    /**
+     * Set button style
+     * @param style Button style
+     */
+    public void setButtonStyle(ButtonStyle style) {
+        this.style = style;
+        
+        switch (style) {
+            case PRIMARY:
+                mainColor = StyleManager.SECONDARY_COLOR;
+                break;
+            case SECONDARY:
+                mainColor = StyleManager.BUTTON_SECONDARY_COLOR;
+                break;
+            case SUCCESS:
+                mainColor = StyleManager.SUCCESS_COLOR;
+                break;
+            case DANGER:
+                mainColor = StyleManager.ERROR_COLOR;
+                break;
+            case INFO:
+                mainColor = StyleManager.INFO_COLOR;
+                break;
+            case WARNING:
+                mainColor = StyleManager.WARNING_COLOR;
+                break;
+        }
+        
+        hoverColor = StyleManager.lighten(mainColor, 0.1f);
+        pressedColor = StyleManager.darken(mainColor, 0.1f);
+        
+        repaint();
+    }
+    
+    /**
+     * Set whether the button has rounded corners
+     * @param isRound true for rounded corners, false for square
+     */
+    public void setRound(boolean isRound) {
+        this.isRound = isRound;
+        repaint();
+    }
+    
+    /**
+     * Set small size
+     */
+    public void setSmallSize() {
+        setPreferredSize(new Dimension(90, 32));
+    }
+    
+    /**
+     * Set large size
+     */
+    public void setLargeSize() {
+        setPreferredSize(new Dimension(150, 40));
+    }
+    
+    /**
+     * Custom painting
+     */
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        // Determine button color based on state
+        int width = getWidth();
+        int height = getHeight();
+        int arcSize = isRound ? StyleManager.BORDER_RADIUS : 0;
+        
+        // Get current background color based on state
+        Color backgroundColor;
+        
         if (!isEnabled()) {
-            g2d.setColor(StyleManager.BUTTON_DISABLED_COLOR);
-        } else if (isPressed) {
-            g2d.setColor(pressedColor);
+            backgroundColor = StyleManager.BUTTON_DISABLED_COLOR;
+        } else if (getModel().isPressed()) {
+            backgroundColor = pressedColor;
         } else if (isHovered) {
-            g2d.setColor(hoverColor);
+            backgroundColor = hoverColor;
         } else {
-            g2d.setColor(backgroundColor);
+            backgroundColor = mainColor;
         }
         
-        // Draw button background
+        // Draw background
         if (isRound) {
-            g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 
-                    StyleManager.CORNER_RADIUS, StyleManager.CORNER_RADIUS));
+            g2d.setColor(backgroundColor);
+            g2d.fill(new RoundRectangle2D.Double(0, 0, width, height, arcSize, arcSize));
         } else {
-            g2d.fillRect(0, 0, getWidth(), getHeight());
+            g2d.setColor(backgroundColor);
+            g2d.fillRect(0, 0, width, height);
+        }
+        
+        // Draw slight shadow when hovered
+        if (isHovered && isEnabled()) {
+            g2d.setColor(new Color(0, 0, 0, 20));
+            g2d.fill(new RoundRectangle2D.Double(0, height - 2, width, 2, arcSize, arcSize));
         }
         
         g2d.dispose();
         
+        // Paint text and icon
         super.paintComponent(g);
     }
     
     /**
-     * Set the button as a primary button
+     * Set main color manually
+     * @param color Main color
      */
-    public void setPrimary() {
-        setButtonColor(StyleManager.BUTTON_PRIMARY_COLOR);
-    }
-    
-    /**
-     * Set the button as a secondary button
-     */
-    public void setSecondary() {
-        setButtonColor(StyleManager.BUTTON_SECONDARY_COLOR);
-    }
-    
-    /**
-     * Set the button as a success button
-     */
-    public void setSuccess() {
-        setButtonColor(StyleManager.SUCCESS_COLOR);
-    }
-    
-    /**
-     * Set the button as a danger button
-     */
-    public void setDanger() {
-        setButtonColor(StyleManager.ERROR_COLOR);
-    }
-    
-    /**
-     * Set a custom button color
-     * 
-     * @param color Button background color
-     */
-    public void setButtonColor(Color color) {
-        this.backgroundColor = color;
+    public void setMainColor(Color color) {
+        this.mainColor = color;
         this.hoverColor = StyleManager.lighten(color, 0.1f);
         this.pressedColor = StyleManager.darken(color, 0.1f);
-        repaint();
-    }
-    
-    /**
-     * Set whether to use rounded corners
-     * 
-     * @param isRound Whether to use rounded corners
-     */
-    public void setRound(boolean isRound) {
-        this.isRound = isRound;
         repaint();
     }
 }
