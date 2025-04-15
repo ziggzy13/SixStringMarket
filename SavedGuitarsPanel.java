@@ -109,7 +109,7 @@ public class SavedGuitarsPanel extends JPanel {
                     // Добавяне на бутон за премахване от запазени
                     JButton removeButton = new JButton("Премахни от запазени");
                     removeButton.setBackground(Color.GRAY);
-                    removeButton.setForeground(Color.WHITE);
+                    removeButton.setForeground(Color.BLACK);
                     removeButton.addActionListener(e -> removeFromSaved(savedGuitar.getGuitarId()));
                     
                     JPanel cardPanel = new JPanel(new BorderLayout());

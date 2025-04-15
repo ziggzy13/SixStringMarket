@@ -1,7 +1,6 @@
 package com.sixstringmarket.ui.components;
 
-import com.sixstringmarket.util.Constants;
-import com.sixstringmarket.util.ColorScheme;
+import com.sixstringmarket.util.StyleManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,123 +9,122 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Modern button with hover and press animations
+ * Modern button with styling and hover effects
  */
 public class ModernButton extends JButton {
-    
     private Color backgroundColor;
     private Color hoverColor;
     private Color pressedColor;
-    private Color textColor;
     private boolean isRound;
+    private boolean isHovered;
+    private boolean isPressed;
     
     /**
-     * Create modern button with basic style
+     * Creates a primary button
+     * 
      * @param text Button text
      */
     public ModernButton(String text) {
-        this(text, Constants.PRIMARY_COLOR, Color.WHITE, true);
+        this(text, StyleManager.BUTTON_PRIMARY_COLOR, Color.WHITE, true);
     }
     
     /**
-     * Create modern button with accent style
+     * Creates a button with custom colors
+     * 
      * @param text Button text
-     * @param isAccent Flag whether button is accent
+     * @param isAccent Whether to use accent color
      */
     public ModernButton(String text, boolean isAccent) {
-        this(text, isAccent ? Constants.ACCENT_COLOR : Constants.PRIMARY_COLOR, Color.WHITE, true);
+        this(text, isAccent ? StyleManager.SECONDARY_COLOR : StyleManager.BUTTON_SECONDARY_COLOR, 
+             Color.WHITE, true);
     }
     
     /**
-     * Create modern button with custom style
+     * Creates a button with fully custom styling
+     * 
      * @param text Button text
-     * @param backgroundColor Background color
-     * @param textColor Text color
-     * @param isRound Flag whether button has rounded corners
+     * @param backgroundColor Button background color
+     * @param textColor Button text color
+     * @param isRound Whether to use rounded corners
      */
     public ModernButton(String text, Color backgroundColor, Color textColor, boolean isRound) {
         super(text);
         this.backgroundColor = backgroundColor;
-        this.hoverColor = lightenColor(backgroundColor, 0.2f);
-        this.pressedColor = darkenColor(backgroundColor, 0.2f);
-        
-        // Calculate appropriate text color based on background brightness
-        this.textColor = ColorScheme.getTextColorForBackground(backgroundColor);
-        
-        // Override if explicit text color is provided
-        if (textColor != null) {
-            this.textColor = textColor;
-        }
-        
+        this.hoverColor = StyleManager.lighten(backgroundColor, 0.1f);
+        this.pressedColor = StyleManager.darken(backgroundColor, 0.1f);
         this.isRound = isRound;
+        this.isHovered = false;
+        this.isPressed = false;
         
         setup();
     }
     
     /**
-     * Initialize styles and events
+     * Setup the button styling and event handlers
      */
     private void setup() {
-        // Appearance configuration
-        setFont(Constants.DEFAULT_FONT);
+        setFont(StyleManager.DEFAULT_FONT);
+        setForeground(Color.WHITE);
         setBorderPainted(false);
         setFocusPainted(false);
         setContentAreaFilled(false);
-        setForeground(textColor);
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
         setOpaque(false);
         
-        // Size configuration
-        setPreferredSize(Constants.BUTTON_DIMENSION);
-        
-        // Add hover and click effects
+        // Add hover/press effects
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                setBackground(hoverColor);
-                repaint();
+                if (isEnabled()) {
+                    isHovered = true;
+                    repaint();
+                }
             }
             
             @Override
             public void mouseExited(MouseEvent e) {
-                setBackground(backgroundColor);
+                isHovered = false;
+                isPressed = false;
                 repaint();
             }
             
             @Override
             public void mousePressed(MouseEvent e) {
-                setBackground(pressedColor);
-                repaint();
+                if (isEnabled()) {
+                    isPressed = true;
+                    repaint();
+                }
             }
             
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (contains(e.getPoint())) {
-                    setBackground(hoverColor);
-                } else {
-                    setBackground(backgroundColor);
-                }
+                isPressed = false;
                 repaint();
             }
         });
     }
     
-    /**
-     * Custom button painting
-     */
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
+        // Determine button color based on state
+        if (!isEnabled()) {
+            g2d.setColor(StyleManager.BUTTON_DISABLED_COLOR);
+        } else if (isPressed) {
+            g2d.setColor(pressedColor);
+        } else if (isHovered) {
+            g2d.setColor(hoverColor);
+        } else {
+            g2d.setColor(backgroundColor);
+        }
+        
         // Draw button background
         if (isRound) {
-            // Rounded button
-            int arc = Constants.ROUNDED_CORNER_RADIUS;
-            g2d.setColor(isEnabled() ? getBackground() != null ? getBackground() : backgroundColor : Constants.TEXT_SECONDARY_COLOR);
-            g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), arc, arc));
+            g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 
+                    StyleManager.CORNER_RADIUS, StyleManager.CORNER_RADIUS));
         } else {
-            // Rectangular button
-            g2d.setColor(isEnabled() ? getBackground() != null ? getBackground() : backgroundColor : Constants.TEXT_SECONDARY_COLOR);
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
         
@@ -136,52 +134,52 @@ public class ModernButton extends JButton {
     }
     
     /**
-     * Lighten color
-     * @param color Color to lighten
-     * @param factor Lighten factor (0.0 to 1.0)
-     * @return Lightened color
+     * Set the button as a primary button
      */
-    private Color lightenColor(Color color, float factor) {
-        int r = Math.min(255, (int) (color.getRed() + (255 - color.getRed()) * factor));
-        int g = Math.min(255, (int) (color.getGreen() + (255 - color.getGreen()) * factor));
-        int b = Math.min(255, (int) (color.getBlue() + (255 - color.getBlue()) * factor));
-        return new Color(r, g, b);
+    public void setPrimary() {
+        setButtonColor(StyleManager.BUTTON_PRIMARY_COLOR);
     }
     
     /**
-     * Darken color
-     * @param color Color to darken
-     * @param factor Darken factor (0.0 to 1.0)
-     * @return Darkened color
+     * Set the button as a secondary button
      */
-    private Color darkenColor(Color color, float factor) {
-        int r = Math.max(0, (int) (color.getRed() * (1 - factor)));
-        int g = Math.max(0, (int) (color.getGreen() * (1 - factor)));
-        int b = Math.max(0, (int) (color.getBlue() * (1 - factor)));
-        return new Color(r, g, b);
+    public void setSecondary() {
+        setButtonColor(StyleManager.BUTTON_SECONDARY_COLOR);
     }
     
     /**
-     * Set button color
-     * @param color Color
+     * Set the button as a success button
+     */
+    public void setSuccess() {
+        setButtonColor(StyleManager.SUCCESS_COLOR);
+    }
+    
+    /**
+     * Set the button as a danger button
+     */
+    public void setDanger() {
+        setButtonColor(StyleManager.ERROR_COLOR);
+    }
+    
+    /**
+     * Set a custom button color
+     * 
+     * @param color Button background color
      */
     public void setButtonColor(Color color) {
         this.backgroundColor = color;
-        this.hoverColor = lightenColor(color, 0.2f);
-        this.pressedColor = darkenColor(color, 0.2f);
-        
-        // Update text color based on background brightness
-        this.textColor = ColorScheme.getTextColorForBackground(color);
-        setForeground(textColor);
-        
-        setBackground(color);
+        this.hoverColor = StyleManager.lighten(color, 0.1f);
+        this.pressedColor = StyleManager.darken(color, 0.1f);
         repaint();
     }
     
     /**
-     * Set small button size
+     * Set whether to use rounded corners
+     * 
+     * @param isRound Whether to use rounded corners
      */
-    public void setSmallSize() {
-        setPreferredSize(Constants.SMALL_BUTTON_DIMENSION);
+    public void setRound(boolean isRound) {
+        this.isRound = isRound;
+        repaint();
     }
 }

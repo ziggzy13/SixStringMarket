@@ -158,7 +158,7 @@ public class UserProfilePanel extends JPanel {
         
         updateButton = new JButton("Запази промените");
         updateButton.setBackground(Constants.PRIMARY_COLOR);
-        updateButton.setForeground(Color.WHITE);
+        updateButton.setForeground(Color.BLACK);
         updateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -169,7 +169,7 @@ public class UserProfilePanel extends JPanel {
         
         changePasswordButton = new JButton("Смяна на парола");
         changePasswordButton.setBackground(Constants.SECONDARY_COLOR);
-        changePasswordButton.setForeground(Color.WHITE);
+        changePasswordButton.setForeground(Color.BLACK);
         changePasswordButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

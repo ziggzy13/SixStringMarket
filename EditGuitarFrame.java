@@ -114,11 +114,11 @@ public class EditGuitarFrame extends JDialog {
         
         saveButton = new JButton("Запази промените");
         saveButton.setBackground(Constants.PRIMARY_COLOR);
-        saveButton.setForeground(Color.WHITE);
+        saveButton.setForeground(Color.BLACK);
         
         cancelButton = new JButton("Отказ");
         cancelButton.setBackground(Color.GRAY);
-        cancelButton.setForeground(Color.WHITE);
+        cancelButton.setForeground(Color.BLACK);
     }
     
     /**

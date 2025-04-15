@@ -90,7 +90,7 @@ public class SixStringMarketApp {
         
         // Настройка на бутони
         UIManager.put("Button.background", Constants.PRIMARY_COLOR);
-        UIManager.put("Button.foreground", Color.WHITE);
+        UIManager.put("Button.foreground", Color.BLACK);
         UIManager.put("Button.focus", new Color(0, 0, 0, 0));
     }
 }

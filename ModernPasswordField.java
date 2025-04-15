@@ -10,9 +10,9 @@ import java.awt.event.FocusEvent;
 import java.awt.geom.RoundRectangle2D;
 
 /**
- * Modern text field with styling and placeholder support
+ * Modern password field with styling and placeholder support
  */
-public class ModernTextField extends JTextField {
+public class ModernPasswordField extends JPasswordField {
     private String placeholder;
     private Color placeholderColor;
     private boolean isRound;
@@ -20,21 +20,21 @@ public class ModernTextField extends JTextField {
     private Color focusBorderColor;
     
     /**
-     * Creates a standard text field
+     * Creates a standard password field
      * 
      * @param columns Number of columns
      */
-    public ModernTextField(int columns) {
+    public ModernPasswordField(int columns) {
         this(null, columns);
     }
     
     /**
-     * Creates a text field with placeholder text
+     * Creates a password field with placeholder text
      * 
      * @param placeholder Placeholder text
      * @param columns Number of columns
      */
-    public ModernTextField(String placeholder, int columns) {
+    public ModernPasswordField(String placeholder, int columns) {
         super(columns);
         this.placeholder = placeholder;
         this.placeholderColor = StyleManager.TEXT_SECONDARY_COLOR;
@@ -46,7 +46,7 @@ public class ModernTextField extends JTextField {
     }
     
     /**
-     * Initialize text field styling
+     * Initialize password field styling
      */
     private void setup() {
         setFont(StyleManager.DEFAULT_FONT);
@@ -109,8 +109,8 @@ public class ModernTextField extends JTextField {
         
         super.paintComponent(g);
         
-        // Draw placeholder if text is empty and field doesn't have focus
-        if (placeholder != null && getText().isEmpty() && !isFocusOwner()) {
+        // Draw placeholder if password is empty and field doesn't have focus
+        if (placeholder != null && getPassword().length == 0 && !isFocusOwner()) {
             g = getGraphics();
             if (g != null) {
                 g.setColor(placeholderColor);
@@ -148,7 +148,7 @@ public class ModernTextField extends JTextField {
     }
     
     /**
-     * Set whether text field has rounded corners
+     * Set whether password field has rounded corners
      * 
      * @param isRound Whether to use rounded corners
      */

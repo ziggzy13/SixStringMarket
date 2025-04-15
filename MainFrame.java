@@ -3,6 +3,7 @@ package com.sixstringmarket.ui;
 import com.sixstringmarket.model.User;
 import com.sixstringmarket.service.AuthenticationService;
 import com.sixstringmarket.util.ColorScheme;
+import com.sixstringmarket.util.StyleManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -191,9 +192,8 @@ public class MainFrame extends JFrame {
      * Create the sidebar with navigation buttons
      */
     private JPanel createSidebar() {
-        // Sidebar container
         JPanel sidebar = new JPanel(new BorderLayout());
-        sidebar.setBackground(ColorScheme.PRIMARY);
+        sidebar.setBackground(StyleManager.PRIMARY_COLOR);
         sidebar.setPreferredSize(new Dimension(220, 0));
         
         // App logo and title at top
@@ -339,8 +339,9 @@ public class MainFrame extends JFrame {
             NavButton adminButton = new NavButton("⚙", "Admin Panel");
             adminButton.addNavActionListener(e -> {
                 // Deselect all nav buttons
-                for (NavButton btn : navButtons) {
-                    btn.setSelected(false);
+            	for (NavButton button : navButtons) {
+                    button.setTextColor(StyleManager.TEXT_COLOR);
+                    button.setHoverColor(StyleManager.SECONDARY_COLOR);
                 }
                 adminButton.setSelected(true);
                 showAdminPanel();

@@ -182,7 +182,7 @@ public class AdminPanel extends JPanel {
         JButton createButton = new JButton("Create Admin");
         createButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         createButton.setBackground(new Color(103, 58, 183));
-        createButton.setForeground(Color.WHITE);
+        createButton.setForeground(Color.BLACK);
         createButton.addActionListener(e -> createAdminAccount());
         formPanel.add(createButton, gbc);
         

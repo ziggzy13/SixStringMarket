@@ -63,13 +63,13 @@ public class CheckoutFrame extends JDialog {
         
         JLabel titleLabel = new JLabel("Checkout");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        titleLabel.setForeground(Color.WHITE); // тук оставяме бял текст върху цветен фон
+        titleLabel.setForeground(Color.BLACK); // тук оставяме бял текст върху цветен фон
         
         titlePanel.add(titleLabel, BorderLayout.WEST);
         
         // Close button
         JButton closeButton = new JButton("×");
-        closeButton.setForeground(Color.WHITE); // бял текст върху цветен фон
+        closeButton.setForeground(Color.BLACK); // бял текст върху цветен фон
         closeButton.setFont(new Font("Arial", Font.BOLD, 20));
         closeButton.setBorderPainted(false);
         closeButton.setContentAreaFilled(false);
@@ -177,7 +177,7 @@ public class CheckoutFrame extends JDialog {
         
         JButton continueButton = new JButton("Continue to Payment");
         continueButton.setBackground(Constants.PRIMARY_COLOR);
-        continueButton.setForeground(Color.WHITE);
+        continueButton.setForeground(Color.BLACK);
         continueButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         continueButton.addActionListener(e -> {
             tabbedPane.setEnabledAt(1, true);
@@ -216,7 +216,7 @@ public class CheckoutFrame extends JDialog {
         
         JButton backButton = new JButton("Back");
         backButton.setBackground(Color.LIGHT_GRAY);
-        backButton.setForeground(Color.WHITE);
+        backButton.setForeground(Color.BLACK);
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         backButton.addActionListener(e -> {
             tabbedPane.setSelectedIndex(0);
@@ -224,7 +224,7 @@ public class CheckoutFrame extends JDialog {
         
         JButton continueButton = new JButton("Continue to Confirmation");
         continueButton.setBackground(Constants.PRIMARY_COLOR);
-        continueButton.setForeground(Color.WHITE);
+        continueButton.setForeground(Color.BLACK);
         continueButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         continueButton.addActionListener(e -> {
             if (paymentMethodPanel.validatePaymentData()) {
@@ -288,7 +288,7 @@ public class CheckoutFrame extends JDialog {
         
         JButton backButton = new JButton("Back");
         backButton.setBackground(Color.LIGHT_GRAY);
-        backButton.setForeground(Color.WHITE);
+        backButton.setForeground(Color.BLACK);
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         backButton.addActionListener(e -> {
             tabbedPane.setSelectedIndex(1);
@@ -296,7 +296,7 @@ public class CheckoutFrame extends JDialog {
         
         JButton confirmButton = new JButton("Confirm Order");
         confirmButton.setBackground(Constants.SUCCESS_COLOR);
-        confirmButton.setForeground(Color.WHITE);
+        confirmButton.setForeground(Color.BLACK);
         confirmButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         confirmButton.addActionListener(e -> {
             processOrder();
