@@ -3,6 +3,8 @@ package com.sixstringmarket.util;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -19,6 +21,8 @@ import javax.swing.border.LineBorder;
  * StyleManager loads CSS-like styles and applies them to Swing components
  */
 public class StyleManager {
+	private static final String CSS_PATH = "resources/css/modern-style.css";
+    private static final String PROPERTIES_PATH = "resources/css/modern-style.css";
     
     private static Map<String, String> cssProperties = new HashMap<>();
     private static boolean isInitialized = false;
@@ -26,11 +30,20 @@ public class StyleManager {
     // Application colors
     public static Color PRIMARY_COLOR;
     public static Color SECONDARY_COLOR;
+    public static Color ACCENT_COLOR = new Color(0, 150, 136);
     public static Color BACKGROUND_COLOR;
     public static Color CARD_BG_COLOR;
     public static Color TEXT_COLOR;
     public static Color TEXT_SECONDARY_COLOR;
     
+    // UI dimensions
+    public static int PADDING = 10;
+    public static int CORNER_RADIUS = 8;
+ // Font sizes
+    public static int FONT_SIZE_SMALL = 12;
+    public static int FONT_SIZE_DEFAULT = 14;
+    public static int FONT_SIZE_LARGE = 16;
+    public static int FONT_SIZE_TITLE = 20;
     // Functional colors
     public static Color SUCCESS_COLOR;
     public static Color WARNING_COLOR;
@@ -124,6 +137,108 @@ public class StyleManager {
             loadDefaultProperties();
         }
     }
+    private void createDefaultCssFile() {
+        try {
+            // Create default styles directory
+            File styleDir = new File("resources/styles/modern-style.css");
+            if (!styleDir.exists()) {
+                styleDir.mkdirs();
+            }
+            
+            // Create default properties file
+            java.io.PrintWriter propWriter = new java.io.PrintWriter(PROPERTIES_PATH);
+            propWriter.println("# SixStringMarket default style properties");
+            propWriter.println("# Generated on " + new java.util.Date());
+            propWriter.println();
+            propWriter.println("# Colors (in hex format)");
+            propWriter.println("color.primary=" + colorToHex(PRIMARY_COLOR));
+            propWriter.println("color.secondary=" + colorToHex(SECONDARY_COLOR));
+            propWriter.println("color.accent=" + colorToHex(ACCENT_COLOR));
+            propWriter.println("color.background=" + colorToHex(BACKGROUND_COLOR));
+            propWriter.println("color.card=" + colorToHex(CARD_BG_COLOR));
+            propWriter.println("color.text=" + colorToHex(TEXT_COLOR));
+            propWriter.println("color.text.secondary=" + colorToHex(TEXT_SECONDARY_COLOR));
+            propWriter.println();
+            propWriter.println("color.success=" + colorToHex(SUCCESS_COLOR));
+            propWriter.println("color.warning=" + colorToHex(WARNING_COLOR));
+            propWriter.println("color.error=" + colorToHex(ERROR_COLOR));
+            propWriter.println();
+            propWriter.println("# Dimensions");
+            propWriter.println("dimension.padding=" + PADDING);
+            propWriter.println("dimension.corner.radius=" + CORNER_RADIUS);
+            propWriter.println();
+            propWriter.println("# Font sizes");
+            propWriter.println("font.size.small=" + FONT_SIZE_SMALL);
+            propWriter.println("font.size.default=" + FONT_SIZE_DEFAULT);
+            propWriter.println("font.size.large=" + FONT_SIZE_LARGE);
+            propWriter.println("font.size.title=" + FONT_SIZE_TITLE);
+            propWriter.close();
+            
+            // Create basic CSS file
+            java.io.PrintWriter cssWriter = new java.io.PrintWriter(CSS_PATH);
+            cssWriter.println("/* SixStringMarket default CSS */");
+            cssWriter.println("/* Generated on " + new java.util.Date() + " */");
+            cssWriter.println();
+            cssWriter.println(":root {");
+            cssWriter.println("  --primary-color: " + colorToHex(PRIMARY_COLOR) + ";");
+            cssWriter.println("  --secondary-color: " + colorToHex(SECONDARY_COLOR) + ";");
+            cssWriter.println("  --accent-color: " + colorToHex(ACCENT_COLOR) + ";");
+            cssWriter.println("  --background-color: " + colorToHex(BACKGROUND_COLOR) + ";");
+            cssWriter.println("  --card-bg-color: " + colorToHex(CARD_BG_COLOR) + ";");
+            cssWriter.println("  --text-color: " + colorToHex(TEXT_COLOR) + ";");
+            cssWriter.println("  --text-secondary-color: " + colorToHex(TEXT_SECONDARY_COLOR) + ";");
+            cssWriter.println("  --success-color: " + colorToHex(SUCCESS_COLOR) + ";");
+            cssWriter.println("  --warning-color: " + colorToHex(WARNING_COLOR) + ";");
+            cssWriter.println("  --error-color: " + colorToHex(ERROR_COLOR) + ";");
+            cssWriter.println("  --padding: " + PADDING + "px;");
+            cssWriter.println("  --corner-radius: " + CORNER_RADIUS + "px;");
+            cssWriter.println("}");
+            cssWriter.println();
+            cssWriter.println(".app-container {");
+            cssWriter.println("  background-color: var(--background-color);");
+            cssWriter.println("}");
+            cssWriter.println();
+            cssWriter.println(".card {");
+            cssWriter.println("  background-color: var(--card-bg-color);");
+            cssWriter.println("  border-radius: var(--corner-radius);");
+            cssWriter.println("  padding: var(--padding);");
+            cssWriter.println("}");
+            cssWriter.close();
+            
+            System.out.println("Default style files created successfully");
+        } catch (IOException e) {
+            System.err.println("Error creating default style files: " + e.getMessage());
+        }
+    }
+    private String colorToHex(Color color) {
+        return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+    }
+    
+    /**
+     * Parse hex color string to Color
+     */
+    private static Color parseColor(String hexColor) {
+        if (hexColor == null || !hexColor.startsWith("#")) {
+            return Color.BLACK; // Default
+        }
+        
+        try {
+            hexColor = hexColor.substring(1); // Remove # character
+            return new Color(
+                Integer.parseInt(hexColor.substring(0, 2), 16),
+                Integer.parseInt(hexColor.substring(2, 4), 16),
+                Integer.parseInt(hexColor.substring(4, 6), 16)
+            );
+        } catch (Exception e) {
+            System.err.println("Error parsing color: " + hexColor);
+            return Color.BLACK; // Default
+        }
+    }
+    
+    /**
+     * Parse integer with default value
+     */
+    
     
     /**
      * Load default properties if CSS file is not found
@@ -282,28 +397,16 @@ public class StyleManager {
     /**
      * Parse color from CSS hex value
      */
-    private static Color parseColor(String colorStr) {
-        if (colorStr == null) {
-            return Color.GRAY; // Default fallback
+    private int parseInt(String value, int defaultValue) {
+        if (value == null) {
+            return defaultValue;
         }
         
-        colorStr = colorStr.trim();
-        
-        // Handle var() references
-        if (colorStr.startsWith("var(--")) {
-            String varName = colorStr.substring(5, colorStr.length() - 1);
-            colorStr = cssProperties.get(varName);
-            if (colorStr == null) {
-                return Color.GRAY;
-            }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
         }
-        
-        // Hex color
-        if (colorStr.startsWith("#")) {
-            return Color.decode(colorStr);
-        }
-        
-        return Color.GRAY;
     }
     
     /**
@@ -391,4 +494,9 @@ public class StyleManager {
         int b = Math.max(0, (int)(color.getBlue() * (1 - factor)));
         return new Color(r, g, b, color.getAlpha());
     }
+
+	public static StyleManager getInstance() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

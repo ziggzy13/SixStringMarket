@@ -349,7 +349,7 @@ public class GuitarDetailsPanel extends JPanel {
 
 				for (int i = 1; i <= 5; i++) {
 					JLabel starLabel = new JLabel(i <= review.getRating() ? "★" : "☆");
-					starLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+					starLabel.setFont(new Font("Arial Unicode MS ", Font.PLAIN, 16));
 					starLabel.setForeground(i <= review.getRating() ? new Color(255, 215, 0) : Color.GRAY);
 					starsPanel.add(starLabel);
 				}

@@ -70,7 +70,7 @@ public class SavedGuitarsPanel extends JPanel {
     /**
      * Зарежда запазените китари от базата данни
      */
-    private void loadSavedGuitars() {
+    public void loadSavedGuitars() {
         guitarsPanel.removeAll();
         
         // Проверка дали има влязъл потребител

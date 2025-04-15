@@ -550,6 +550,8 @@ public class LoginFrame extends JFrame {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         
+        System.out.println("Attempting login for user: " + username); // Debug log
+        
         // Validate input
         if (username.trim().isEmpty() || password.isEmpty()) {
             showError("Please enter both username and password");
@@ -577,13 +579,28 @@ public class LoginFrame extends JFrame {
                     boolean success = get();
                     
                     if (success) {
-                        // Successful login
+                        System.out.println("Login successful! Opening main frame..."); // Debug log
+                        
+                        // Successful login - show the main frame
                         statusLabel.setText("");
-                        // Open main frame
                         dispose();
-                        new MainFrame().setVisible(true);
+                        
+                        // Important: Create and show the main frame
+                        try {
+                            MainFrame mainFrame = new MainFrame();
+                            mainFrame.setVisible(true);
+                            System.out.println("MainFrame set to visible");
+                        } catch (Exception e) {
+                            System.err.println("Error creating MainFrame: " + e.getMessage());
+                            e.printStackTrace();
+                            JOptionPane.showMessageDialog(null,
+                                "Error opening main window: " + e.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        }
                     } else {
                         // Failed login
+                        System.out.println("Login failed - invalid credentials"); // Debug log
                         showError("Invalid username or password");
                         shakeLoginButton();
                         passwordField.setText("");
@@ -592,6 +609,8 @@ public class LoginFrame extends JFrame {
                         setCursor(Cursor.getDefaultCursor());
                     }
                 } catch (Exception ex) {
+                    System.err.println("Error during login: " + ex.getMessage()); // Debug log
+                    ex.printStackTrace();
                     showError("Login error: " + ex.getMessage());
                     loginButton.setText("Sign In");
                     loginButton.setEnabled(true);

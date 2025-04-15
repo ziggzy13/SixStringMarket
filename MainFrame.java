@@ -3,14 +3,16 @@ package com.sixstringmarket.ui;
 import com.sixstringmarket.model.User;
 import com.sixstringmarket.service.AuthenticationService;
 import com.sixstringmarket.util.ColorScheme;
-import com.sixstringmarket.util.StyleManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 /**
  * Modern main application window with responsive design,
@@ -27,6 +29,7 @@ public class MainFrame extends JFrame {
     private JPanel contentPanel;
     private JPanel headerPanel;
     
+    private JLabel headerTitleLabel;
     // Navigation components
     private List<NavButton> navButtons;
     private int activeNavIndex = 0;
@@ -34,6 +37,7 @@ public class MainFrame extends JFrame {
     // Content panels
     private CardLayout contentCardLayout;
     private JPanel contentCardPanel;
+    private Map<String, JPanel> cachedPanels;
     
     // Animation components
     private Timer animationTimer;
@@ -132,68 +136,172 @@ public class MainFrame extends JFrame {
      * Constructor
      */
     public MainFrame() {
-        // Get current user
-        currentUser = AuthenticationService.getInstance().getCurrentUser();
-        
-        // Window settings
-        setTitle("SixStringMarket");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1280, 800);
-        setMinimumSize(new Dimension(900, 600));
-        setLocationRelativeTo(null);
-        
-        // Initialize UI components
-        initComponents();
-        
-        // Show home screen by default
-        setActiveNavButton(0);
-        showGuitarListPanel();
+        try {
+            System.out.println("Initializing MainFrame...");
+            
+            // Get current user
+            currentUser = AuthenticationService.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                System.err.println("Warning: Current user is null in MainFrame constructor");
+            } else {
+                System.out.println("Current user: " + currentUser.getUsername());
+            }
+            
+            // Initialize panel cache
+            cachedPanels = new HashMap<>();
+            
+            // Window settings
+            setTitle("SixStringMarket");
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setSize(1280, 800);
+            setMinimumSize(new Dimension(900, 600));
+            setLocationRelativeTo(null);
+            
+            // Initialize UI components
+            initComponents();
+            
+            // Show home screen by default - using try/catch to handle potential errors
+            try {
+                System.out.println("Setting active nav button");
+                setActiveNavButton(0);
+                
+                System.out.println("Showing guitar list panel");
+                showGuitarListPanel();
+            } catch (Exception e) {
+                System.err.println("Error initializing default view: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
+            // Add window listener to clean up resources on close
+            addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    cleanupResources();
+                }
+            });
+            
+            System.out.println("MainFrame initialization complete");
+        } catch (Exception e) {
+            System.err.println("Error in MainFrame constructor: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Rethrow to see the error
+        }
     }
     
     /**
      * Initialize UI components
      */
     private void initComponents() {
-        // Main container panel
-        mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(ColorScheme.BACKGROUND);
-        
-        // Create sidebar
-        sidebarPanel = createSidebar();
-        
-        // Create header
-        headerPanel = createHeader();
-        
-        // Create content panel with card layout for panel switching
-        contentCardLayout = new CardLayout();
-        contentCardPanel = new JPanel(contentCardLayout);
-        contentCardPanel.setOpaque(false);
-        
-        // Create main content area with header and content
-        contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setBackground(ColorScheme.BACKGROUND);
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        contentPanel.add(headerPanel, BorderLayout.NORTH);
-        contentPanel.add(contentCardPanel, BorderLayout.CENTER);
-        
-        // Add main components to the frame
-        mainPanel.add(sidebarPanel, BorderLayout.WEST);
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
-        
-        // Add status bar
-        JPanel statusBar = createStatusBar();
-        mainPanel.add(statusBar, BorderLayout.SOUTH);
-        
-        // Set as content pane
-        setContentPane(mainPanel);
+        try {
+            System.out.println("Initializing components...");
+            
+            // Main container panel
+            mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBackground(ColorScheme.BACKGROUND);
+            
+            // Create sidebar
+            System.out.println("Creating sidebar...");
+            sidebarPanel = createSidebar();
+            
+            // Create header with explicit reference to the title label
+            System.out.println("Creating header...");
+            headerPanel = new JPanel(new BorderLayout());
+            headerPanel.setBackground(ColorScheme.CARD_BG);
+            headerPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, ColorScheme.darken(ColorScheme.CARD_BG, 0.1f)),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+            ));
+            
+            // Create and store the title label
+            headerTitleLabel = new JLabel("Home");
+            headerTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+            headerTitleLabel.setForeground(ColorScheme.TEXT);
+            headerPanel.add(headerTitleLabel, BorderLayout.WEST);
+            
+            // Center section with search
+            JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+            searchPanel.setOpaque(false);
+            
+            JTextField searchField = new JTextField(25);
+            searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            searchField.setBackground(ColorScheme.FIELD_BG);
+            searchField.setForeground(ColorScheme.TEXT);
+            searchField.setCaretColor(ColorScheme.TEXT);
+            searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
+                BorderFactory.createEmptyBorder(8, 10, 8, 10)
+            ));
+            searchPanel.add(searchField);
+            
+            JButton searchButton = new JButton("Search");
+            searchButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            searchButton.setBackground(ColorScheme.SECONDARY);
+            searchButton.setForeground(Color.WHITE);
+            searchButton.setBorderPainted(false);
+            searchButton.setFocusPainted(false);
+            searchPanel.add(searchButton);
+            
+            headerPanel.add(searchPanel, BorderLayout.CENTER);
+            
+            // Add Guitar button
+            JButton addGuitarButton = new JButton("+ Add Guitar");
+            addGuitarButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            addGuitarButton.setBackground(ColorScheme.SECONDARY);
+            addGuitarButton.setForeground(Color.WHITE);
+            addGuitarButton.setBorderPainted(false);
+            addGuitarButton.setFocusPainted(false);
+            addGuitarButton.addActionListener(e -> showAddGuitarFrame());
+            headerPanel.add(addGuitarButton, BorderLayout.EAST);
+            
+            // Create content panel with card layout for panel switching
+            System.out.println("Creating content panel...");
+            contentCardLayout = new CardLayout();
+            contentCardPanel = new JPanel(contentCardLayout);
+            contentCardPanel.setOpaque(false);
+            
+            // Create main content area with header and content
+            contentPanel = new JPanel(new BorderLayout());
+            contentPanel.setBackground(ColorScheme.BACKGROUND);
+            contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            contentPanel.add(headerPanel, BorderLayout.NORTH);
+            contentPanel.add(contentCardPanel, BorderLayout.CENTER);
+            
+            // Add main components to the frame
+            mainPanel.add(sidebarPanel, BorderLayout.WEST);
+            mainPanel.add(contentPanel, BorderLayout.CENTER);
+            
+            // Add status bar
+            JPanel statusBar = createStatusBar();
+            mainPanel.add(statusBar, BorderLayout.SOUTH);
+            
+            // Set as content pane
+            setContentPane(mainPanel);
+            
+            System.out.println("Components initialized successfully");
+        } catch (Exception e) {
+            System.err.println("Error initializing components: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Create a minimal content panel in case of error
+            JPanel errorPanel = new JPanel(new BorderLayout());
+            errorPanel.setBackground(Color.WHITE);
+            
+            JLabel errorLabel = new JLabel("Error initializing application UI: " + e.getMessage());
+            errorLabel.setForeground(Color.RED);
+            errorLabel.setHorizontalAlignment(JLabel.CENTER);
+            errorPanel.add(errorLabel, BorderLayout.CENTER);
+            
+            setContentPane(errorPanel);
+        }
     }
     
     /**
      * Create the sidebar with navigation buttons
      */
     private JPanel createSidebar() {
+        // Sidebar container
         JPanel sidebar = new JPanel(new BorderLayout());
-        sidebar.setBackground(StyleManager.PRIMARY_COLOR);
+        sidebar.setBackground(ColorScheme.PRIMARY);
         sidebar.setPreferredSize(new Dimension(220, 0));
         
         // App logo and title at top
@@ -339,9 +447,8 @@ public class MainFrame extends JFrame {
             NavButton adminButton = new NavButton("⚙", "Admin Panel");
             adminButton.addNavActionListener(e -> {
                 // Deselect all nav buttons
-            	for (NavButton button : navButtons) {
-                    button.setTextColor(StyleManager.TEXT_COLOR);
-                    button.setHoverColor(StyleManager.SECONDARY_COLOR);
+                for (NavButton btn : navButtons) {
+                    btn.setSelected(false);
                 }
                 adminButton.setSelected(true);
                 showAdminPanel();
@@ -617,7 +724,7 @@ public class MainFrame extends JFrame {
      * Update header title
      */
     private void updateHeaderTitle(String title) {
-        JLabel titleLabel = (JLabel) headerPanel.getComponent(0);
+        JLabel titleLabel = (JLabel) ((JPanel) headerPanel.getComponent(0)).getComponent(0);
         titleLabel.setText(title);
     }
     
@@ -672,107 +779,161 @@ public class MainFrame extends JFrame {
         dialog.setVisible(true);
     }
     
-    // SIMPLIFIED METHOD - FIX FOR NAVIGATION
     /**
      * Show guitar list panel
      */
     public void showGuitarListPanel() {
-        // Get the main content panel
-        contentCardPanel.removeAll();
-        
-        // Create panel
-        GuitarListPanel guitarListPanel = new GuitarListPanel(this);
-        contentCardPanel.add(guitarListPanel, "guitarList");
-        updateHeaderTitle("All Guitars");
-        
-        // Force refresh
-        contentCardPanel.revalidate();
-        contentCardPanel.repaint();
+        try {
+            System.out.println("Showing guitar list panel");
+            
+            // Update title first to avoid issues if panel creation fails
+            updateHeaderTitle("All Guitars");
+            
+            // Check if panel already exists in cache
+            if (cachedPanels.containsKey("guitarList")) {
+                contentCardLayout.show(contentCardPanel, "guitarList");
+                return;
+            }
+            
+            // Create panel
+            System.out.println("Creating new guitar list panel");
+            GuitarListPanel guitarListPanel = new GuitarListPanel(this);
+            contentCardPanel.add(guitarListPanel, "guitarList");
+            cachedPanels.put("guitarList", guitarListPanel);
+            contentCardLayout.show(contentCardPanel, "guitarList");
+            
+            System.out.println("Guitar list panel shown successfully");
+        } catch (Exception e) {
+            System.err.println("Error showing guitar list panel: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Show error in the content panel
+            JPanel errorPanel = new JPanel(new BorderLayout());
+            errorPanel.setBackground(Color.WHITE);
+            errorPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            
+            JLabel errorLabel = new JLabel("<html>Error loading guitar list:<br>" + e.getMessage() + "</html>");
+            errorLabel.setForeground(Color.RED);
+            errorPanel.add(errorLabel, BorderLayout.CENTER);
+            
+            // Add a refresh button
+            JButton refreshButton = new JButton("Try Again");
+            refreshButton.addActionListener(ev -> showGuitarListPanel());
+            
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            buttonPanel.add(refreshButton);
+            errorPanel.add(buttonPanel, BorderLayout.SOUTH);
+            
+            // Add error panel to content area
+            contentCardPanel.add(errorPanel, "error");
+            contentCardLayout.show(contentCardPanel, "error");
+        }
     }
     
     /**
      * Show guitar details panel
      */
     public void showGuitarDetailsPanel(int guitarId) {
-        // Get the main content panel
-        contentCardPanel.removeAll();
+        // Create unique key for this guitar
+        String key = "guitarDetails_" + guitarId;
         
-        // Create panel
-        GuitarDetailsPanel guitarDetailsPanel = new GuitarDetailsPanel(this, guitarId);
-        contentCardPanel.add(guitarDetailsPanel, "guitarDetails");
+        // Create panel if it doesn't exist in cache
+        if (!cachedPanels.containsKey(key)) {
+            GuitarDetailsPanel guitarDetailsPanel = new GuitarDetailsPanel(this, guitarId);
+            contentCardPanel.add(guitarDetailsPanel, key);
+            cachedPanels.put(key, guitarDetailsPanel);
+        }
+        
+        contentCardLayout.show(contentCardPanel, key);
         updateHeaderTitle("Guitar Details");
-        
-        // Force refresh
-        contentCardPanel.revalidate();
-        contentCardPanel.repaint();
     }
     
     /**
      * Show my guitars panel
      */
     public void showMyGuitarsPanel() {
-        // Get the main content panel
-        contentCardPanel.removeAll();
+        // Check if panel already exists in cache
+        if (cachedPanels.containsKey("myGuitars")) {
+            // Get the panel and refresh it
+            GuitarListPanel panel = (GuitarListPanel) cachedPanels.get("myGuitars");
+            panel.loadGuitars(); // Refresh the panel content
+            
+            contentCardLayout.show(contentCardPanel, "myGuitars");
+            updateHeaderTitle("My Listings");
+            return;
+        }
         
         // Create panel
         GuitarListPanel myGuitarsPanel = new GuitarListPanel(this, currentUser.getUserId());
         contentCardPanel.add(myGuitarsPanel, "myGuitars");
+        cachedPanels.put("myGuitars", myGuitarsPanel);
+        contentCardLayout.show(contentCardPanel, "myGuitars");
         updateHeaderTitle("My Listings");
-        
-        // Force refresh
-        contentCardPanel.revalidate();
-        contentCardPanel.repaint();
     }
     
     /**
      * Show saved guitars panel
      */
     public void showSavedGuitarsPanel() {
-        // Get the main content panel
-        contentCardPanel.removeAll();
+        // Check if panel already exists in cache
+        if (cachedPanels.containsKey("savedGuitars")) {
+            // Get the panel and refresh it to ensure up-to-date content
+            SavedGuitarsPanel panel = (SavedGuitarsPanel) cachedPanels.get("savedGuitars");
+            panel.loadSavedGuitars(); // Need to ensure this method exists
+            
+            contentCardLayout.show(contentCardPanel, "savedGuitars");
+            updateHeaderTitle("Saved Guitars");
+            return;
+        }
         
         // Create panel
         SavedGuitarsPanel savedGuitarsPanel = new SavedGuitarsPanel(this);
         contentCardPanel.add(savedGuitarsPanel, "savedGuitars");
+        cachedPanels.put("savedGuitars", savedGuitarsPanel);
+        contentCardLayout.show(contentCardPanel, "savedGuitars");
         updateHeaderTitle("Saved Guitars");
-        
-        // Force refresh
-        contentCardPanel.revalidate();
-        contentCardPanel.repaint();
     }
     
     /**
      * Show order history panel
      */
     public void showOrderHistoryPanel() {
-        // Get the main content panel
-        contentCardPanel.removeAll();
+        // Check if panel already exists in cache
+        if (cachedPanels.containsKey("orderHistory")) {
+            // Get the panel and refresh its content
+            OrderHistoryPanel panel = (OrderHistoryPanel) cachedPanels.get("orderHistory");
+            panel.loadOrders(); // Ensure this method exists for refreshing
+            
+            contentCardLayout.show(contentCardPanel, "orderHistory");
+            updateHeaderTitle("Order History");
+            return;
+        }
         
         // Create panel
         OrderHistoryPanel orderHistoryPanel = new OrderHistoryPanel(this);
         contentCardPanel.add(orderHistoryPanel, "orderHistory");
+        cachedPanels.put("orderHistory", orderHistoryPanel);
+        contentCardLayout.show(contentCardPanel, "orderHistory");
         updateHeaderTitle("Order History");
-        
-        // Force refresh
-        contentCardPanel.revalidate();
-        contentCardPanel.repaint();
     }
     
     /**
      * Show user profile panel
      */
     public void showUserProfilePanel() {
-        // Get the main content panel
-        contentCardPanel.removeAll();
+        // Check if panel already exists in cache
+        if (cachedPanels.containsKey("userProfile")) {
+            contentCardLayout.show(contentCardPanel, "userProfile");
+            updateHeaderTitle("My Profile");
+            return;
+        }
         
         // Create panel
         UserProfilePanel userProfilePanel = new UserProfilePanel(this);
         contentCardPanel.add(userProfilePanel, "userProfile");
+        cachedPanels.put("userProfile", userProfilePanel);
+        contentCardLayout.show(contentCardPanel, "userProfile");
         updateHeaderTitle("My Profile");
-        
-        // Force refresh
-        contentCardPanel.revalidate();
-        contentCardPanel.repaint();
     }
     
     /**
@@ -788,17 +949,19 @@ public class MainFrame extends JFrame {
             return;
         }
         
-        // Get the main content panel
-        contentCardPanel.removeAll();
+        // Check if panel already exists in cache
+        if (cachedPanels.containsKey("adminPanel")) {
+            contentCardLayout.show(contentCardPanel, "adminPanel");
+            updateHeaderTitle("Admin Panel");
+            return;
+        }
         
         // Create panel
         AdminPanel adminPanel = new AdminPanel(this);
         contentCardPanel.add(adminPanel, "adminPanel");
+        cachedPanels.put("adminPanel", adminPanel);
+        contentCardLayout.show(contentCardPanel, "adminPanel");
         updateHeaderTitle("Admin Panel");
-        
-        // Force refresh
-        contentCardPanel.revalidate();
-        contentCardPanel.repaint();
     }
     
     /**
@@ -815,5 +978,18 @@ public class MainFrame extends JFrame {
     public void showEditGuitarFrame(int guitarId) {
         EditGuitarFrame editGuitarFrame = new EditGuitarFrame(this, guitarId);
         editGuitarFrame.setVisible(true);
+    }
+    
+    /**
+     * Clean up resources when the frame is closed
+     */
+    private void cleanupResources() {
+        // Stop any running timers
+        if (animationTimer != null && animationTimer.isRunning()) {
+            animationTimer.stop();
+        }
+        
+        // Clear caches
+        cachedPanels.clear();
     }
 }

@@ -210,7 +210,7 @@ public class OrderHistoryPanel extends JPanel {
     /**
      * Зарежда поръчките от базата данни
      */
-    private void loadOrders() {
+    public void loadOrders() {
         if (!AuthenticationService.getInstance().isAuthenticated()) {
             return;
         }

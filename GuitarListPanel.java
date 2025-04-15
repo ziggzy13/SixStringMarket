@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Панел за показване на списък с китари
+ * Panel for displaying a list of guitars
  */
 public class GuitarListPanel extends JPanel {
     
@@ -27,158 +27,225 @@ public class GuitarListPanel extends JPanel {
     private JPanel guitarsPanel;
     private SearchFilterPanel searchFilterPanel;
     private List<Guitar> currentGuitars;
-    private int sellerId; // Ако != 0, то показва китари само на конкретен продавач
+    private int sellerId; // If not 0, shows guitars for a specific seller only
     
     /**
-     * Конструктор за всички китари
-     * @param parentFrame Родителският прозорец
+     * Constructor for all guitars
+     * @param parentFrame Parent frame
      */
     public GuitarListPanel(MainFrame parentFrame) {
         this(parentFrame, 0);
     }
     
     /**
-     * Конструктор за китари на конкретен продавач
-     * @param parentFrame Родителският прозорец
-     * @param sellerId ID на продавача
+     * Constructor for guitars from a specific seller
+     * @param parentFrame Parent frame
+     * @param sellerId Seller ID
      */
     public GuitarListPanel(MainFrame parentFrame, int sellerId) {
-        this.parentFrame = parentFrame;
-        this.guitarService = new GuitarService();
-        this.searchService = new SearchService();
-        this.sellerId = sellerId;
-        
-        setLayout(new BorderLayout());
-        setBackground(Constants.PANEL_COLOR); // Бял фон
-        
-        initComponents();
-        
-        // Зареждане на китарите
-        loadGuitars();
+        try {
+            System.out.println("Initializing GuitarListPanel...");
+            
+            this.parentFrame = parentFrame;
+            this.guitarService = new GuitarService();
+            this.searchService = new SearchService();
+            this.sellerId = sellerId;
+            
+            setLayout(new BorderLayout());
+            setBackground(Constants.BACKGROUND_COLOR);
+            
+            initComponents();
+            
+            // Load guitars
+            loadGuitars();
+            
+            System.out.println("GuitarListPanel initialized successfully");
+        } catch (Exception e) {
+            System.err.println("Error initializing GuitarListPanel: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Create error display panel
+            setLayout(new BorderLayout());
+            setBackground(Color.WHITE);
+            
+            JLabel errorLabel = new JLabel("Error loading guitar list: " + e.getMessage());
+            errorLabel.setForeground(Color.RED);
+            errorLabel.setHorizontalAlignment(JLabel.CENTER);
+            add(errorLabel, BorderLayout.CENTER);
+        }
     }
     
     /**
-     * Инициализира компонентите на панела
+     * Initialize panel components with error handling
      */
     private void initComponents() {
-        // Използваме BorderLayout за главния панел
-        setLayout(new BorderLayout(0, 0));
-        setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        setBackground(Constants.BACKGROUND_COLOR);
-        
-        // Панел за заглавието
-        JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(Constants.BACKGROUND_COLOR);
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
-        
-        String titleText = (sellerId == 0) ? "Всички китари" : "Моите обяви";
-        JLabel titleLabel = new JLabel(titleText, JLabel.LEFT);
-        titleLabel.setFont(Constants.TITLE_FONT);
-        titleLabel.setForeground(Constants.PRIMARY_COLOR);
-        titlePanel.add(titleLabel, BorderLayout.WEST);
-        
-        add(titlePanel, BorderLayout.NORTH);
-        
-        // Контейнер за филтър и съдържание
-        JPanel contentPanel = new JPanel(new BorderLayout(0, 0));
-        contentPanel.setBackground(Constants.BACKGROUND_COLOR);
-        
-        // Добавяне на филтъра само когато показваме всички китари
-        if (sellerId == 0) {
-            // Създаване на панел за филтъра със специфичен стил
-            JPanel filterPanel = new JPanel(new BorderLayout());
-            filterPanel.setBackground(Constants.BACKGROUND_COLOR);
-            filterPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 1, 0, new Color(220, 220, 220)),
-                BorderFactory.createEmptyBorder(0, 10, 0, 10)
-            ));
+        try {
+            // Panel title
+            JPanel titlePanel = new JPanel(new BorderLayout());
+            titlePanel.setBackground(Constants.BACKGROUND_COLOR);
             
-            // Добавяне на филтър компонента
-            searchFilterPanel = new SearchFilterPanel(this);
-            filterPanel.add(searchFilterPanel, BorderLayout.CENTER);
+            String title = (sellerId == 0) ? "All Guitars" : "My Listings";
+            JLabel titleLabel = new JLabel(title, JLabel.LEFT);
+            titleLabel.setFont(Constants.TITLE_FONT);
+            titleLabel.setForeground(Constants.PRIMARY_COLOR);
+            titlePanel.add(titleLabel, BorderLayout.WEST);
             
-            contentPanel.add(filterPanel, BorderLayout.NORTH);
-        }
-        
-        // Панел за списъка с китари
-        guitarsPanel = new JPanel();
-        guitarsPanel.setLayout(new BoxLayout(guitarsPanel, BoxLayout.Y_AXIS));
-        guitarsPanel.setBackground(Constants.BACKGROUND_COLOR);
-        
-        JScrollPane scrollPane = new JScrollPane(guitarsPanel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.setBackground(Constants.BACKGROUND_COLOR);
-        
-        contentPanel.add(scrollPane, BorderLayout.CENTER);
-        
-        add(contentPanel, BorderLayout.CENTER);
-    }
-    /**
-     * Зарежда китарите от базата данни
-     */
-    public void loadGuitars() {
-        guitarsPanel.removeAll();
-        
-        if (sellerId == 0) {
-            currentGuitars = guitarService.getAllActiveGuitars();
-        } else {
-            currentGuitars = guitarService.getGuitarsBySeller(sellerId);
-        }
-        
-        if (currentGuitars.isEmpty()) {
-            JLabel noGuitarsLabel = new JLabel("Няма налични китари");
-            noGuitarsLabel.setFont(Constants.DEFAULT_FONT);
-            noGuitarsLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
-            noGuitarsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            guitarsPanel.add(Box.createVerticalStrut(50));
-            guitarsPanel.add(noGuitarsLabel);
-        } else {
-            for (Guitar guitar : currentGuitars) {
-                GuitarCard card = new GuitarCard(guitar, parentFrame);
-                guitarsPanel.add(card);
-                guitarsPanel.add(Box.createVerticalStrut(10));
+            // Add search panel for all guitars list
+            if (sellerId == 0) {
+                try {
+                    searchFilterPanel = new SearchFilterPanel(this);
+                    titlePanel.add(searchFilterPanel, BorderLayout.CENTER);
+                } catch (Exception e) {
+                    System.err.println("Error creating search filter panel: " + e.getMessage());
+                }
             }
+            
+            // Add new guitar button for authenticated users
+            if (AuthenticationService.getInstance().isAuthenticated()) {
+                JButton addGuitarButton = new JButton("Add Guitar");
+                addGuitarButton.setBackground(Constants.ACCENT_COLOR);
+                addGuitarButton.setForeground(Color.WHITE);
+                addGuitarButton.addActionListener(e -> parentFrame.showAddGuitarFrame());
+                titlePanel.add(addGuitarButton, BorderLayout.EAST);
+            }
+            
+            add(titlePanel, BorderLayout.NORTH);
+            
+            // Guitar list panel with scrolling
+            guitarsPanel = new JPanel();
+            guitarsPanel.setLayout(new BoxLayout(guitarsPanel, BoxLayout.Y_AXIS));
+            guitarsPanel.setBackground(Constants.BACKGROUND_COLOR);
+            
+            JScrollPane scrollPane = new JScrollPane(guitarsPanel);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setBorder(BorderFactory.createEmptyBorder());
+            scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            
+            add(scrollPane, BorderLayout.CENTER);
+        } catch (Exception e) {
+            System.err.println("Error in initComponents: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to be caught by the constructor
         }
-        
-        guitarsPanel.revalidate();
-        guitarsPanel.repaint();
     }
     
     /**
-     * Търсене и филтриране на китари
-     * @param keyword Ключова дума
-     * @param type Тип на китарата
-     * @param brand Марка
-     * @param minPrice Минимална цена
-     * @param maxPrice Максимална цена
-     * @param condition Състояние
+     * Load guitars from database with error handling
+     */
+    public void loadGuitars() {
+        try {
+            System.out.println("Loading guitars...");
+            guitarsPanel.removeAll();
+            
+            if (sellerId == 0) {
+                currentGuitars = guitarService.getAllActiveGuitars();
+                System.out.println("Loaded " + currentGuitars.size() + " active guitars");
+            } else {
+                currentGuitars = guitarService.getGuitarsBySeller(sellerId);
+                System.out.println("Loaded " + currentGuitars.size() + " guitars for seller " + sellerId);
+            }
+            
+            if (currentGuitars.isEmpty()) {
+                JLabel noGuitarsLabel = new JLabel("No guitars available");
+                noGuitarsLabel.setFont(Constants.DEFAULT_FONT);
+                noGuitarsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                guitarsPanel.add(Box.createVerticalStrut(50));
+                guitarsPanel.add(noGuitarsLabel);
+            } else {
+                for (Guitar guitar : currentGuitars) {
+                    try {
+                        GuitarCard card = new GuitarCard(guitar, parentFrame);
+                        guitarsPanel.add(card);
+                        guitarsPanel.add(Box.createVerticalStrut(10));
+                    } catch (Exception e) {
+                        System.err.println("Error creating guitar card for guitar ID " + guitar.getGuitarId() + ": " + e.getMessage());
+                        // Skip this guitar and continue with the next one
+                    }
+                }
+            }
+            
+            // Refresh the UI
+            guitarsPanel.revalidate();
+            guitarsPanel.repaint();
+            
+            System.out.println("Guitars loaded successfully");
+        } catch (Exception e) {
+            System.err.println("Error loading guitars: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Show error message in panel
+            guitarsPanel.removeAll();
+            
+            JLabel errorLabel = new JLabel("Error loading guitar list: " + e.getMessage());
+            errorLabel.setForeground(Color.RED);
+            errorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            
+            JButton retryButton = new JButton("Try Again");
+            retryButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            retryButton.addActionListener(evt -> loadGuitars());
+            
+            guitarsPanel.add(Box.createVerticalStrut(50));
+            guitarsPanel.add(errorLabel);
+            guitarsPanel.add(Box.createVerticalStrut(20));
+            guitarsPanel.add(retryButton);
+            
+            guitarsPanel.revalidate();
+            guitarsPanel.repaint();
+        }
+    }
+    
+    /**
+     * Search and filter guitars
      */
     public void searchGuitars(String keyword, GuitarType type, String brand, 
                              BigDecimal minPrice, BigDecimal maxPrice, Condition condition) {
-        
-        currentGuitars = searchService.search(keyword, type, brand, minPrice, maxPrice, condition);
-        
-        guitarsPanel.removeAll();
-        
-        if (currentGuitars.isEmpty()) {
-            JLabel noResultsLabel = new JLabel("Няма намерени китари по зададените критерии");
-            noResultsLabel.setFont(Constants.DEFAULT_FONT);
-            noResultsLabel.setForeground(Constants.TEXT_COLOR); // Черен текст
-            noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            guitarsPanel.add(Box.createVerticalStrut(50));
-            guitarsPanel.add(noResultsLabel);
-        } else {
-            for (Guitar guitar : currentGuitars) {
-                GuitarCard card = new GuitarCard(guitar, parentFrame);
-                guitarsPanel.add(card);
-                guitarsPanel.add(Box.createVerticalStrut(10));
+        try {
+            System.out.println("Searching guitars with filters...");
+            
+            currentGuitars = searchService.search(keyword, type, brand, minPrice, maxPrice, condition);
+            System.out.println("Found " + currentGuitars.size() + " matching guitars");
+            
+            guitarsPanel.removeAll();
+            
+            if (currentGuitars.isEmpty()) {
+                JLabel noResultsLabel = new JLabel("No guitars match your search criteria");
+                noResultsLabel.setFont(Constants.DEFAULT_FONT);
+                noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                guitarsPanel.add(Box.createVerticalStrut(50));
+                guitarsPanel.add(noResultsLabel);
+            } else {
+                for (Guitar guitar : currentGuitars) {
+                    try {
+                        GuitarCard card = new GuitarCard(guitar, parentFrame);
+                        guitarsPanel.add(card);
+                        guitarsPanel.add(Box.createVerticalStrut(10));
+                    } catch (Exception e) {
+                        System.err.println("Error creating guitar card: " + e.getMessage());
+                        // Continue with next guitar
+                    }
+                }
             }
+            
+            guitarsPanel.revalidate();
+            guitarsPanel.repaint();
+            
+            System.out.println("Search results displayed");
+        } catch (Exception e) {
+            System.err.println("Error during search: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Show error message
+            guitarsPanel.removeAll();
+            
+            JLabel errorLabel = new JLabel("Error searching guitars: " + e.getMessage());
+            errorLabel.setForeground(Color.RED);
+            errorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            guitarsPanel.add(Box.createVerticalStrut(50));
+            guitarsPanel.add(errorLabel);
+            
+            guitarsPanel.revalidate();
+            guitarsPanel.repaint();
         }
-        
-        guitarsPanel.revalidate();
-        guitarsPanel.repaint();
     }
 }

@@ -2,10 +2,9 @@ package com.sixstringmarket.components;
 
 import com.sixstringmarket.model.Guitar;
 import com.sixstringmarket.ui.MainFrame;
+import com.sixstringmarket.util.Constants;
 import com.sixstringmarket.util.ImageHandler;
-import com.sixstringmarket.util.StyleManager;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -15,35 +14,53 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.Locale;
+
+/**
+ * Custom component to display a guitar card in a list
+ */
 public class GuitarCard extends JPanel {
     
     private Guitar guitar;
     private MainFrame parentFrame;
     private boolean isHovered;
     private boolean isPressed;
+    private boolean isRound = true;
+    private boolean hasShadow = true;
     
+    // Shadow properties
+    private static final int SHADOW_SIZE = 5;
+    private static final Color SHADOW_COLOR = new Color(0, 0, 0, 20);
+    
+    // Corner radius
+    private static final int CORNER_RADIUS = 8;
+    
+    /**
+     * Constructor
+     * @param guitar Guitar data to display
+     * @param parentFrame Parent frame for navigation
+     */
     public GuitarCard(Guitar guitar, MainFrame parentFrame) {
-        super(); // Use ModernPanel as base
-        setRound(true);
-        setHasShadow(true);
-        
         this.guitar = guitar;
         this.parentFrame = parentFrame;
         
         setLayout(new BorderLayout(10, 0));
-        setBackground(StyleManager.CARD_BG_COLOR);
+        setBackground(Constants.PANEL_COLOR);
         setBorder(null);
         setPreferredSize(new Dimension(0, 150));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
         
+        // Make panel non-opaque to allow for custom painting
+        setOpaque(false);
+        
         initComponents();
         
-        // Event listeners
+        // Add event listeners for hover and click effects
         addMouseListener(new MouseAdapter() {
-        	@Override
+            @Override
             public void mouseClicked(MouseEvent e) {
                 parentFrame.showGuitarDetailsPanel(guitar.getGuitarId());
             }
+            
             @Override
             public void mouseEntered(MouseEvent e) {
                 isHovered = true;
@@ -76,61 +93,99 @@ public class GuitarCard extends JPanel {
             }
         });
     }
-    private void setHasShadow(boolean b) {
-		// TODO Auto-generated method stub
-		
-	}
-	private void setRound(boolean b) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
+    
+    /**
+     * Set whether the card has rounded corners
+     * @param isRound True for rounded corners
+     */
+    public void setRound(boolean isRound) {
+        this.isRound = isRound;
+        repaint();
+    }
+    
+    /**
+     * Set whether the card has a shadow
+     * @param hasShadow True for shadow effect
+     */
+    public void setHasShadow(boolean hasShadow) {
+        this.hasShadow = hasShadow;
+        repaint();
+    }
+    
+    @Override
     protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         int width = getWidth();
         int height = getHeight();
-        int arc = StyleManager.CORNER_RADIUS;
+        int arc = isRound ? CORNER_RADIUS : 0;
+        
+        // Draw shadow if enabled
+        if (hasShadow) {
+            for (int i = 0; i < SHADOW_SIZE; i++) {
+                g2d.setColor(new Color(SHADOW_COLOR.getRed(), 
+                                       SHADOW_COLOR.getGreen(), 
+                                       SHADOW_COLOR.getBlue(), 
+                                       SHADOW_COLOR.getAlpha() / (i + 1)));
+                
+                if (isRound) {
+                    g2d.fill(new RoundRectangle2D.Double(i, i, width - i * 2, height - i * 2, arc, arc));
+                } else {
+                    g2d.fillRect(i, i, width - i * 2, height - i * 2);
+                }
+            }
+        }
         
         // Draw background
         if (isPressed) {
-            g2d.setColor(StyleManager.darken(StyleManager.CARD_BG_COLOR, 0.1f));
+            g2d.setColor(darken(Constants.PANEL_COLOR, 0.1f));
         } else if (isHovered) {
-            g2d.setColor(StyleManager.lighten(StyleManager.CARD_BG_COLOR, 0.05f));
+            g2d.setColor(lighten(Constants.PANEL_COLOR, 0.05f));
         } else {
-            g2d.setColor(StyleManager.CARD_BG_COLOR);
+            g2d.setColor(Constants.PANEL_COLOR);
         }
         
-        g2d.fill(new RoundRectangle2D.Double(0, 0, width, height, arc, arc));
+        if (isRound) {
+            g2d.fill(new RoundRectangle2D.Double(0, 0, width, height, arc, arc));
+        } else {
+            g2d.fillRect(0, 0, width, height);
+        }
         
         // Draw border
-        g2d.setColor(isHovered ? StyleManager.SECONDARY_COLOR : 
-                      StyleManager.darken(StyleManager.CARD_BG_COLOR, 0.1f));
+        g2d.setColor(isHovered ? Constants.SECONDARY_COLOR : 
+                     darken(Constants.PANEL_COLOR, 0.1f));
         g2d.setStroke(new BasicStroke(1));
-        g2d.draw(new RoundRectangle2D.Double(0, 0, width - 1, height - 1, arc, arc));
+        
+        if (isRound) {
+            g2d.draw(new RoundRectangle2D.Double(0, 0, width - 1, height - 1, arc, arc));
+        } else {
+            g2d.drawRect(0, 0, width - 1, height - 1);
+        }
         
         g2d.dispose();
     }
     
+    /**
+     * Initialize card components
+     */
     private void initComponents() {
         // Image panel - fixed size and centered
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setPreferredSize(new Dimension(140, 140));
-        imagePanel.setBackground(Color.WHITE);
-        imagePanel.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
+        imagePanel.setOpaque(false);
+        imagePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        
+        // Create image container with border
+        JPanel imageContainer = new JPanel(new BorderLayout());
+        imageContainer.setBackground(Color.WHITE);
+        imageContainer.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
         
         // Try to load the guitar image
         BufferedImage image = null;
-        try {
-            if (guitar.getImagePath() != null && !guitar.getImagePath().isEmpty()) {
-                File imageFile = new File("resources/images/" + guitar.getImagePath());
-                if (imageFile.exists()) {
-                    image = ImageIO.read(imageFile);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading image: " + e.getMessage());
+        if (guitar.getImagePath() != null && !guitar.getImagePath().isEmpty()) {
+            image = ImageHandler.loadImage(guitar.getImagePath());
         }
         
         JLabel imageLabel;
@@ -161,12 +216,18 @@ public class GuitarCard extends JPanel {
                     // Draw neck
                     int neckWidth = 12;
                     int neckHeight = 60;
-                    g2d.fillRect((getWidth() - neckWidth)/2, (getHeight() - bodyHeight)/2 - neckHeight + 10, neckWidth, neckHeight);
+                    g2d.fillRect((getWidth() - neckWidth)/2, (getHeight() - bodyHeight)/2 - neckHeight + 10, 
+                                neckWidth, neckHeight);
                     
                     // Draw head
                     int headWidth = 20;
                     int headHeight = 15;
-                    g2d.fillRect((getWidth() - headWidth)/2, (getHeight() - bodyHeight)/2 - neckHeight - headHeight + 10, headWidth, headHeight);
+                    g2d.fillRect((getWidth() - headWidth)/2, (getHeight() - bodyHeight)/2 - neckHeight - headHeight + 10, 
+                                headWidth, headHeight);
+                    
+                    // Draw sound hole
+                    g2d.setColor(new Color(245, 245, 250));
+                    g2d.fillOval((getWidth() - 30)/2, (getHeight() - 30)/2 + 15, 30, 30);
                     
                     g2d.dispose();
                 }
@@ -175,19 +236,20 @@ public class GuitarCard extends JPanel {
         }
         
         imageLabel.setHorizontalAlignment(JLabel.CENTER);
-        imagePanel.add(imageLabel, BorderLayout.CENTER);
+        imageContainer.add(imageLabel, BorderLayout.CENTER);
+        imagePanel.add(imageContainer, BorderLayout.CENTER);
         add(imagePanel, BorderLayout.WEST);
         
         // Information panel
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setBackground(Color.WHITE);
+        infoPanel.setOpaque(false);
         infoPanel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 5));
         
         // Guitar title
         JLabel titleLabel = new JLabel(guitar.getTitle());
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        titleLabel.setForeground(new Color(66, 103, 178));
+        titleLabel.setFont(new Font(Constants.BOLD_FONT.getName(), Font.BOLD, 16));
+        titleLabel.setForeground(Constants.PRIMARY_COLOR);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         infoPanel.add(titleLabel);
         infoPanel.add(Box.createVerticalStrut(5));
@@ -198,7 +260,8 @@ public class GuitarCard extends JPanel {
             brandModel += " " + guitar.getModel();
         }
         JLabel brandModelLabel = new JLabel(brandModel);
-        brandModelLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        brandModelLabel.setFont(Constants.DEFAULT_FONT);
+        brandModelLabel.setForeground(Constants.TEXT_COLOR);
         brandModelLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         infoPanel.add(brandModelLabel);
         infoPanel.add(Box.createVerticalStrut(5));
@@ -209,24 +272,29 @@ public class GuitarCard extends JPanel {
             typeCondition += ", " + guitar.getManufacturingYear() + " г.";
         }
         JLabel detailsLabel = new JLabel(typeCondition);
-        detailsLabel.setFont(new Font("Segoe UI", Font.ITALIC, 13));
-        detailsLabel.setForeground(new Color(100, 100, 100));
+        detailsLabel.setFont(Constants.SMALL_FONT);
+        detailsLabel.setForeground(Constants.TEXT_SECONDARY_COLOR);
         detailsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         infoPanel.add(detailsLabel);
         
         infoPanel.add(Box.createVerticalGlue());
         
         // Price with nice formatting
-        JLabel priceLabel = new JLabel(guitar.getPrice() + " лв.");
-        priceLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        priceLabel.setForeground(new Color(76, 175, 80)); // Green
+        NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("bg", "BG"));
+        String formattedPrice = formatter.format(guitar.getPrice()).replace("лв", "лв.");
+        
+        JLabel priceLabel = new JLabel(formattedPrice);
+        priceLabel.setFont(new Font(Constants.BOLD_FONT.getName(), Font.BOLD, 18));
+        priceLabel.setForeground(Constants.SUCCESS_COLOR); // Green
         priceLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         infoPanel.add(priceLabel);
         
         add(infoPanel, BorderLayout.CENTER);
     }
     
-    // Helper methods for text conversion
+    /**
+     * Convert guitar type to display text
+     */
     private String getGuitarTypeText(Guitar.GuitarType type) {
         switch (type) {
             case ACOUSTIC: return "Акустична";
@@ -238,6 +306,9 @@ public class GuitarCard extends JPanel {
         }
     }
     
+    /**
+     * Convert condition to display text
+     */
     private String getConditionText(Guitar.Condition condition) {
         switch (condition) {
             case NEW: return "Нова";
@@ -245,5 +316,25 @@ public class GuitarCard extends JPanel {
             case VINTAGE: return "Винтидж";
             default: return "Неизвестно";
         }
+    }
+    
+    /**
+     * Utility method to lighten a color
+     */
+    private Color lighten(Color color, float factor) {
+        int r = Math.min(255, (int)(color.getRed() + (255 - color.getRed()) * factor));
+        int g = Math.min(255, (int)(color.getGreen() + (255 - color.getGreen()) * factor));
+        int b = Math.min(255, (int)(color.getBlue() + (255 - color.getBlue()) * factor));
+        return new Color(r, g, b);
+    }
+    
+    /**
+     * Utility method to darken a color
+     */
+    private Color darken(Color color, float factor) {
+        int r = Math.max(0, (int)(color.getRed() * (1 - factor)));
+        int g = Math.max(0, (int)(color.getGreen() * (1 - factor)));
+        int b = Math.max(0, (int)(color.getBlue() * (1 - factor)));
+        return new Color(r, g, b);
     }
 }
