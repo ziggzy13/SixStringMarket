@@ -14,7 +14,7 @@ import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 
 /**
- * Панел за търсене и филтриране на китари с двуредов дизайн
+ * Panel for searching and filtering guitars
  */
 public class SearchFilterPanel extends JPanel {
     
@@ -31,142 +31,169 @@ public class SearchFilterPanel extends JPanel {
     private JButton resetButton;
     
     /**
-     * Конструктор
-     * @param parentPanel Родителският панел с китари
+     * Constructor
+     * @param parentPanel Parent guitar list panel
      */
     public SearchFilterPanel(GuitarListPanel parentPanel) {
         this.parentPanel = parentPanel;
         this.searchService = new SearchService();
         
-        // Използване на BorderLayout за организация на двата реда
-        setLayout(new BorderLayout(0, 5));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
         setBackground(Constants.BACKGROUND_COLOR);
         
-        initComponents();
-        addEventListeners();
+        try {
+            initComponents();
+            addEventListeners();
+        } catch (Exception e) {
+            System.err.println("Error initializing SearchFilterPanel: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Clear any existing components
+            removeAll();
+            
+            // Add an error message
+            JLabel errorLabel = new JLabel("Error: Could not initialize search filters");
+            errorLabel.setForeground(Color.RED);
+            add(errorLabel);
+        }
     }
     
     /**
-     * Инициализира компонентите на панела
+     * Initialize panel components
      */
     private void initComponents() {
-        // Горен ред - поле за търсене и бутони
-        JPanel topRow = new JPanel(new BorderLayout(10, 0));
-        topRow.setBackground(Constants.BACKGROUND_COLOR);
+        // Search field
+        searchField = new JTextField(15);
+        searchField.setToolTipText("Search by title, brand, model or description");
         
-        // Панел за поле за търсене
-        JPanel searchPanel = new JPanel(new BorderLayout(5, 0));
-        searchPanel.setBackground(Constants.BACKGROUND_COLOR);
-        searchPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+        // Brand dropdown
+        brandCombo = new JComboBox<>(Constants.GUITAR_BRANDS);
+        brandCombo.setPreferredSize(new Dimension(120, 25));
+        brandCombo.insertItemAt("All brands", 0);
+        brandCombo.setSelectedIndex(0);
         
-        JLabel searchLabel = new JLabel("Търсене:");
-        searchPanel.add(searchLabel, BorderLayout.WEST);
+        // Type dropdown
+        String[] types = {"All types", "Acoustic", "Electric", "Classical", "Bass", "Other"};
+        typeCombo = new JComboBox<>(types);
+        typeCombo.setPreferredSize(new Dimension(120, 25));
         
-        // Поле за търсене - увеличена ширина
-        searchField = new JTextField();
-        searchField.setPreferredSize(new Dimension(400, 30));
-        searchField.setToolTipText("Търсене по заглавие, марка, модел или описание");
-        searchPanel.add(searchField, BorderLayout.CENTER);
+        // Condition dropdown
+        String[] conditions = {"All conditions", "New", "Used", "Vintage"};
+        conditionCombo = new JComboBox<>(conditions);
+        conditionCombo.setPreferredSize(new Dimension(120, 25));
         
-        topRow.add(searchPanel, BorderLayout.CENTER);
+        // Price fields
+        minPriceField = new JTextField(5);
+        minPriceField.setToolTipText("Minimum price");
         
-        // Панел за бутони
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        buttonsPanel.setBackground(Constants.BACKGROUND_COLOR);
+        maxPriceField = new JTextField(5);
+        maxPriceField.setToolTipText("Maximum price");
         
-        searchButton = new JButton("Търси");
+        // Buttons
+        searchButton = new JButton("Search");
         searchButton.setBackground(Constants.PRIMARY_COLOR);
-        searchButton.setForeground(Color.BLACK); // Changed to black text color
-        buttonsPanel.add(searchButton);
+        searchButton.setForeground(Color.WHITE);
         
-        resetButton = new JButton("Изчисти");
+        resetButton = new JButton("Reset");
         resetButton.setBackground(Color.LIGHT_GRAY);
         resetButton.setForeground(Color.BLACK);
-        buttonsPanel.add(resetButton);
         
-        topRow.add(buttonsPanel, BorderLayout.EAST);
+        // Add components to panel using separate methods for each section
+        // This prevents one error from affecting the entire panel
         
-        // Добавяне на горния ред към панела
-        add(topRow, BorderLayout.NORTH);
+        // Search section
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        searchPanel.setBackground(Constants.BACKGROUND_COLOR);
+        searchPanel.add(new JLabel("Search:"));
+        searchPanel.add(searchField);
+        add(searchPanel);
         
-        // Долен ред - филтри
-        JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        bottomRow.setBackground(Constants.BACKGROUND_COLOR);
-        bottomRow.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        // Brand section
+        JPanel brandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        brandPanel.setBackground(Constants.BACKGROUND_COLOR);
+        brandPanel.add(new JLabel("Brand:"));
+        brandPanel.add(brandCombo);
+        add(brandPanel);
         
-        // Падащо меню за марка
-        bottomRow.add(new JLabel("Марка:"));
-        brandCombo = new JComboBox<>(Constants.GUITAR_BRANDS);
-        brandCombo.setPreferredSize(new Dimension(150, 30));
-        brandCombo.insertItemAt("Всички марки", 0);
-        brandCombo.setSelectedIndex(0);
-        bottomRow.add(brandCombo);
+        // Type section
+        JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        typePanel.setBackground(Constants.BACKGROUND_COLOR);
+        typePanel.add(new JLabel("Type:"));
+        typePanel.add(typeCombo);
+        add(typePanel);
         
-        // Падащо меню за тип
-        bottomRow.add(new JLabel("Тип:"));
-        String[] types = {"Всички типове", "Акустична", "Електрическа", "Класическа", "Бас", "Друга"};
-        typeCombo = new JComboBox<>(types);
-        typeCombo.setPreferredSize(new Dimension(150, 30));
-        bottomRow.add(typeCombo);
+        // Condition section
+        JPanel conditionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        conditionPanel.setBackground(Constants.BACKGROUND_COLOR);
+        conditionPanel.add(new JLabel("Condition:"));
+        conditionPanel.add(conditionCombo);
+        add(conditionPanel);
         
-        // Падащо меню за състояние
-        bottomRow.add(new JLabel("Състояние:"));
-        String[] conditions = {"Всички състояния", "Нова", "Употребявана", "Винтидж"};
-        conditionCombo = new JComboBox<>(conditions);
-        conditionCombo.setPreferredSize(new Dimension(150, 30));
-        bottomRow.add(conditionCombo);
+        // Price section
+        JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pricePanel.setBackground(Constants.BACKGROUND_COLOR);
+        pricePanel.add(new JLabel("Price from:"));
+        pricePanel.add(minPriceField);
+        pricePanel.add(new JLabel("to:"));
+        pricePanel.add(maxPriceField);
+        add(pricePanel);
         
-        // Полета за цена
-        bottomRow.add(new JLabel("Цена от:"));
-        minPriceField = new JTextField(7);
-        minPriceField.setPreferredSize(new Dimension(70, 30));
-        minPriceField.setToolTipText("Минимална цена");
-        bottomRow.add(minPriceField);
-        
-        bottomRow.add(new JLabel("до:"));
-        maxPriceField = new JTextField(7);
-        maxPriceField.setPreferredSize(new Dimension(70, 30));
-        maxPriceField.setToolTipText("Максимална цена");
-        bottomRow.add(maxPriceField);
-        
-        // Добавяне на долния ред към панела
-        add(bottomRow, BorderLayout.CENTER);
+        // Button section
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        buttonPanel.setBackground(Constants.BACKGROUND_COLOR);
+        buttonPanel.add(searchButton);
+        buttonPanel.add(resetButton);
+        add(buttonPanel);
     }
     
     /**
-     * Добавя слушатели за събития към компонентите
+     * Add event listeners to components
      */
     private void addEventListeners() {
-        // Бутон за търсене
+        // Search button
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                searchGuitars();
+                try {
+                    searchGuitars();
+                } catch (Exception ex) {
+                    System.err.println("Error searching guitars: " + ex.getMessage());
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                        SearchFilterPanel.this,
+                        "Error searching guitars: " + ex.getMessage(),
+                        "Search Error",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+                }
             }
         });
         
-        // Бутон за изчистване на филтрите
+        // Reset button
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                resetFilters();
-            }
-        });
-        
-        // Добавяне на действие при натискане на Enter в полето за търсене
-        searchField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                searchGuitars();
+                try {
+                    resetFilters();
+                } catch (Exception ex) {
+                    System.err.println("Error resetting filters: " + ex.getMessage());
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                        SearchFilterPanel.this,
+                        "Error resetting filters: " + ex.getMessage(),
+                        "Reset Error",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+                }
             }
         });
     }
     
     /**
-     * Извършва търсенето с текущите филтри
+     * Search guitars with current filters
      */
     private void searchGuitars() {
-        // Извличане на стойностите от филтрите
+        // Extract values from filters
         String keyword = searchField.getText().trim();
         
         GuitarType type = null;
@@ -195,46 +222,55 @@ public class SearchFilterPanel extends JPanel {
         }
         
         BigDecimal minPrice = null;
-        if (!minPriceField.getText().trim().isEmpty()) {
+        String minPriceText = minPriceField.getText().trim();
+        if (!minPriceText.isEmpty()) {
             try {
-                minPrice = new BigDecimal(minPriceField.getText().trim());
+                minPrice = new BigDecimal(minPriceText);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this,
-                    "Невалидна минимална цена. Моля, въведете число.",
-                    "Грешка при валидация",
+                    "Invalid minimum price. Please enter a number.",
+                    "Validation Error",
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
         
         BigDecimal maxPrice = null;
-        if (!maxPriceField.getText().trim().isEmpty()) {
+        String maxPriceText = maxPriceField.getText().trim();
+        if (!maxPriceText.isEmpty()) {
             try {
-                maxPrice = new BigDecimal(maxPriceField.getText().trim());
+                maxPrice = new BigDecimal(maxPriceText);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this,
-                    "Невалидна максимална цена. Моля, въведете число.",
-                    "Грешка при валидация",
+                    "Invalid maximum price. Please enter a number.",
+                    "Validation Error",
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
         
-        // Проверка дали минималната цена е по-малка от максималната
+        // Check if minimum price is less than maximum price
         if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
             JOptionPane.showMessageDialog(this,
-                "Минималната цена не може да бъде по-голяма от максималната.",
-                "Грешка при валидация",
+                "Minimum price cannot be greater than maximum price.",
+                "Validation Error",
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
         
-        // Извикване на търсенето в родителския панел
-        parentPanel.searchGuitars(keyword, type, brand, minPrice, maxPrice, condition);
+        // Call search in parent panel
+        if (parentPanel != null) {
+            parentPanel.searchGuitars(keyword, type, brand, minPrice, maxPrice, condition);
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "Cannot perform search: parent panel is null.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     /**
-     * Изчиства всички филтри
+     * Reset all filters
      */
     private void resetFilters() {
         searchField.setText("");
@@ -244,7 +280,14 @@ public class SearchFilterPanel extends JPanel {
         minPriceField.setText("");
         maxPriceField.setText("");
         
-        // Зареждане на всички китари
-        parentPanel.loadGuitars();
+        // Reload all guitars
+        if (parentPanel != null) {
+            parentPanel.loadGuitars();
+        } else {
+            JOptionPane.showMessageDialog(this,
+                "Cannot reset: parent panel is null.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

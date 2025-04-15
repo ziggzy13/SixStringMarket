@@ -27,7 +27,7 @@ public class GuitarListPanel extends JPanel {
     private JPanel guitarsPanel;
     private SearchFilterPanel searchFilterPanel;
     private List<Guitar> currentGuitars;
-    private int sellerId; // If not 0, shows guitars for a specific seller only
+    private int sellerId; // If != 0, shows guitars for a specific seller
     
     /**
      * Constructor for all guitars
@@ -43,40 +43,34 @@ public class GuitarListPanel extends JPanel {
      * @param sellerId Seller ID
      */
     public GuitarListPanel(MainFrame parentFrame, int sellerId) {
+        this.parentFrame = parentFrame;
+        this.guitarService = new GuitarService();
+        this.searchService = new SearchService();
+        this.sellerId = sellerId;
+        
+        setLayout(new BorderLayout());
+        setBackground(Constants.BACKGROUND_COLOR);
+        
         try {
-            System.out.println("Initializing GuitarListPanel...");
-            
-            this.parentFrame = parentFrame;
-            this.guitarService = new GuitarService();
-            this.searchService = new SearchService();
-            this.sellerId = sellerId;
-            
-            setLayout(new BorderLayout());
-            setBackground(Constants.BACKGROUND_COLOR);
-            
             initComponents();
             
             // Load guitars
             loadGuitars();
-            
-            System.out.println("GuitarListPanel initialized successfully");
         } catch (Exception e) {
-            System.err.println("Error initializing GuitarListPanel: " + e.getMessage());
+            System.err.println("Error initializing guitar list panel: " + e.getMessage());
             e.printStackTrace();
             
-            // Create error display panel
+            // Show error message instead of crashing
+            removeAll();
             setLayout(new BorderLayout());
-            setBackground(Color.WHITE);
-            
-            JLabel errorLabel = new JLabel("Error loading guitar list: " + e.getMessage());
+            JLabel errorLabel = new JLabel("Error loading guitars: " + e.getMessage(), JLabel.CENTER);
             errorLabel.setForeground(Color.RED);
-            errorLabel.setHorizontalAlignment(JLabel.CENTER);
             add(errorLabel, BorderLayout.CENTER);
         }
     }
     
     /**
-     * Initialize panel components with error handling
+     * Initialize panel components
      */
     private void initComponents() {
         try {
@@ -90,28 +84,53 @@ public class GuitarListPanel extends JPanel {
             titleLabel.setForeground(Constants.PRIMARY_COLOR);
             titlePanel.add(titleLabel, BorderLayout.WEST);
             
-            // Add search panel for all guitars list
+            // If this is a list of all guitars, add search panel
             if (sellerId == 0) {
                 try {
+                    // Create the search filter panel in its own container
+                    JPanel searchContainer = new JPanel(new BorderLayout());
+                    searchContainer.setBackground(Constants.BACKGROUND_COLOR);
+                    
                     searchFilterPanel = new SearchFilterPanel(this);
-                    titlePanel.add(searchFilterPanel, BorderLayout.CENTER);
+                    searchContainer.add(searchFilterPanel, BorderLayout.CENTER);
+                    
+                    // Add to the title panel
+                    titlePanel.add(searchContainer, BorderLayout.CENTER);
                 } catch (Exception e) {
                     System.err.println("Error creating search filter panel: " + e.getMessage());
+                    e.printStackTrace();
+                    
+                    // Add an error message instead
+                    JLabel searchErrorLabel = new JLabel("Error loading search filters", JLabel.CENTER);
+                    searchErrorLabel.setForeground(Color.RED);
+                    titlePanel.add(searchErrorLabel, BorderLayout.CENTER);
                 }
             }
             
-            // Add new guitar button for authenticated users
+            // Add guitar button
             if (AuthenticationService.getInstance().isAuthenticated()) {
                 JButton addGuitarButton = new JButton("Add Guitar");
                 addGuitarButton.setBackground(Constants.ACCENT_COLOR);
                 addGuitarButton.setForeground(Color.WHITE);
-                addGuitarButton.addActionListener(e -> parentFrame.showAddGuitarFrame());
+                addGuitarButton.addActionListener(e -> {
+                    try {
+                        parentFrame.showAddGuitarFrame();
+                    } catch (Exception ex) {
+                        System.err.println("Error showing add guitar frame: " + ex.getMessage());
+                        JOptionPane.showMessageDialog(
+                            this,
+                            "Error opening add guitar form: " + ex.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                        );
+                    }
+                });
                 titlePanel.add(addGuitarButton, BorderLayout.EAST);
             }
             
             add(titlePanel, BorderLayout.NORTH);
             
-            // Guitar list panel with scrolling
+            // Panel for list of guitars
             guitarsPanel = new JPanel();
             guitarsPanel.setLayout(new BoxLayout(guitarsPanel, BoxLayout.Y_AXIS));
             guitarsPanel.setBackground(Constants.BACKGROUND_COLOR);
@@ -124,71 +143,87 @@ public class GuitarListPanel extends JPanel {
             
             add(scrollPane, BorderLayout.CENTER);
         } catch (Exception e) {
-            System.err.println("Error in initComponents: " + e.getMessage());
+            // Handle any initialization errors
+            System.err.println("Error initializing guitar list panel: " + e.getMessage());
             e.printStackTrace();
-            throw e; // Re-throw to be caught by the constructor
+            
+            // Clear any existing components
+            removeAll();
+            setLayout(new BorderLayout());
+            
+            // Create an error panel
+            JPanel errorPanel = new JPanel(new BorderLayout());
+            errorPanel.setBackground(Constants.BACKGROUND_COLOR);
+            
+            JLabel errorLabel = new JLabel("<html><center>Error loading guitar list:<br>" + 
+                                          e.getMessage() + "</center></html>", JLabel.CENTER);
+            errorLabel.setForeground(Color.RED);
+            errorLabel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            
+            errorPanel.add(errorLabel, BorderLayout.CENTER);
+            add(errorPanel, BorderLayout.CENTER);
         }
     }
     
     /**
-     * Load guitars from database with error handling
+     * Load guitars from database
      */
     public void loadGuitars() {
         try {
-            System.out.println("Loading guitars...");
             guitarsPanel.removeAll();
             
             if (sellerId == 0) {
                 currentGuitars = guitarService.getAllActiveGuitars();
-                System.out.println("Loaded " + currentGuitars.size() + " active guitars");
             } else {
                 currentGuitars = guitarService.getGuitarsBySeller(sellerId);
-                System.out.println("Loaded " + currentGuitars.size() + " guitars for seller " + sellerId);
             }
             
             if (currentGuitars.isEmpty()) {
+                JPanel emptyMessagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                emptyMessagePanel.setBackground(Constants.BACKGROUND_COLOR);
+                
                 JLabel noGuitarsLabel = new JLabel("No guitars available");
                 noGuitarsLabel.setFont(Constants.DEFAULT_FONT);
-                noGuitarsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                emptyMessagePanel.add(noGuitarsLabel);
+                
                 guitarsPanel.add(Box.createVerticalStrut(50));
-                guitarsPanel.add(noGuitarsLabel);
+                guitarsPanel.add(emptyMessagePanel);
             } else {
                 for (Guitar guitar : currentGuitars) {
-                    try {
-                        GuitarCard card = new GuitarCard(guitar, parentFrame);
-                        guitarsPanel.add(card);
-                        guitarsPanel.add(Box.createVerticalStrut(10));
-                    } catch (Exception e) {
-                        System.err.println("Error creating guitar card for guitar ID " + guitar.getGuitarId() + ": " + e.getMessage());
-                        // Skip this guitar and continue with the next one
+                    if (guitar != null) {
+                        try {
+                            GuitarCard card = new GuitarCard(guitar, parentFrame);
+                            // Wrap card in a panel to ensure proper layout
+                            JPanel cardWrapper = new JPanel(new BorderLayout());
+                            cardWrapper.setBackground(Constants.BACKGROUND_COLOR);
+                            cardWrapper.add(card, BorderLayout.CENTER);
+                            guitarsPanel.add(cardWrapper);
+                            guitarsPanel.add(Box.createVerticalStrut(10));
+                        } catch (Exception e) {
+                            System.err.println("Error creating card for guitar ID " + guitar.getGuitarId() + ": " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
             
-            // Refresh the UI
             guitarsPanel.revalidate();
             guitarsPanel.repaint();
-            
-            System.out.println("Guitars loaded successfully");
         } catch (Exception e) {
             System.err.println("Error loading guitars: " + e.getMessage());
             e.printStackTrace();
             
             // Show error message in panel
             guitarsPanel.removeAll();
+            JPanel errorPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            errorPanel.setBackground(Constants.BACKGROUND_COLOR);
             
-            JLabel errorLabel = new JLabel("Error loading guitar list: " + e.getMessage());
+            JLabel errorLabel = new JLabel("Error loading guitars: " + e.getMessage());
             errorLabel.setForeground(Color.RED);
-            errorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            
-            JButton retryButton = new JButton("Try Again");
-            retryButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-            retryButton.addActionListener(evt -> loadGuitars());
+            errorPanel.add(errorLabel);
             
             guitarsPanel.add(Box.createVerticalStrut(50));
-            guitarsPanel.add(errorLabel);
-            guitarsPanel.add(Box.createVerticalStrut(20));
-            guitarsPanel.add(retryButton);
+            guitarsPanel.add(errorPanel);
             
             guitarsPanel.revalidate();
             guitarsPanel.repaint();
@@ -197,52 +232,65 @@ public class GuitarListPanel extends JPanel {
     
     /**
      * Search and filter guitars
+     * @param keyword Keyword
+     * @param type Guitar type
+     * @param brand Brand
+     * @param minPrice Minimum price
+     * @param maxPrice Maximum price
+     * @param condition Condition
      */
     public void searchGuitars(String keyword, GuitarType type, String brand, 
                              BigDecimal minPrice, BigDecimal maxPrice, Condition condition) {
         try {
-            System.out.println("Searching guitars with filters...");
-            
             currentGuitars = searchService.search(keyword, type, brand, minPrice, maxPrice, condition);
-            System.out.println("Found " + currentGuitars.size() + " matching guitars");
             
             guitarsPanel.removeAll();
             
             if (currentGuitars.isEmpty()) {
-                JLabel noResultsLabel = new JLabel("No guitars match your search criteria");
+                JPanel emptyMessagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                emptyMessagePanel.setBackground(Constants.BACKGROUND_COLOR);
+                
+                JLabel noResultsLabel = new JLabel("No guitars found matching your criteria");
                 noResultsLabel.setFont(Constants.DEFAULT_FONT);
-                noResultsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                emptyMessagePanel.add(noResultsLabel);
+                
                 guitarsPanel.add(Box.createVerticalStrut(50));
-                guitarsPanel.add(noResultsLabel);
+                guitarsPanel.add(emptyMessagePanel);
             } else {
                 for (Guitar guitar : currentGuitars) {
-                    try {
-                        GuitarCard card = new GuitarCard(guitar, parentFrame);
-                        guitarsPanel.add(card);
-                        guitarsPanel.add(Box.createVerticalStrut(10));
-                    } catch (Exception e) {
-                        System.err.println("Error creating guitar card: " + e.getMessage());
-                        // Continue with next guitar
+                    if (guitar != null) {
+                        try {
+                            GuitarCard card = new GuitarCard(guitar, parentFrame);
+                            // Wrap card in a panel to ensure proper layout
+                            JPanel cardWrapper = new JPanel(new BorderLayout());
+                            cardWrapper.setBackground(Constants.BACKGROUND_COLOR);
+                            cardWrapper.add(card, BorderLayout.CENTER);
+                            guitarsPanel.add(cardWrapper);
+                            guitarsPanel.add(Box.createVerticalStrut(10));
+                        } catch (Exception e) {
+                            System.err.println("Error creating card for guitar ID " + guitar.getGuitarId() + ": " + e.getMessage());
+                        }
                     }
                 }
             }
             
             guitarsPanel.revalidate();
             guitarsPanel.repaint();
-            
-            System.out.println("Search results displayed");
         } catch (Exception e) {
-            System.err.println("Error during search: " + e.getMessage());
+            System.err.println("Error searching guitars: " + e.getMessage());
             e.printStackTrace();
             
-            // Show error message
+            // Show error message in panel
             guitarsPanel.removeAll();
+            JPanel errorPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            errorPanel.setBackground(Constants.BACKGROUND_COLOR);
             
             JLabel errorLabel = new JLabel("Error searching guitars: " + e.getMessage());
             errorLabel.setForeground(Color.RED);
-            errorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            errorPanel.add(errorLabel);
+            
             guitarsPanel.add(Box.createVerticalStrut(50));
-            guitarsPanel.add(errorLabel);
+            guitarsPanel.add(errorPanel);
             
             guitarsPanel.revalidate();
             guitarsPanel.repaint();

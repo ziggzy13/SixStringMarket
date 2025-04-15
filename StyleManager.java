@@ -39,11 +39,13 @@ public class StyleManager {
     // UI dimensions
     public static int PADDING = 10;
     public static int CORNER_RADIUS = 8;
- // Font sizes
+    
+    // Font sizes
     public static int FONT_SIZE_SMALL = 12;
     public static int FONT_SIZE_DEFAULT = 14;
     public static int FONT_SIZE_LARGE = 16;
     public static int FONT_SIZE_TITLE = 20;
+    
     // Functional colors
     public static Color SUCCESS_COLOR;
     public static Color WARNING_COLOR;

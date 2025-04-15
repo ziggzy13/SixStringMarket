@@ -3,6 +3,7 @@ package com.sixstringmarket.ui;
 import com.sixstringmarket.model.User;
 import com.sixstringmarket.service.AuthenticationService;
 import com.sixstringmarket.util.ColorScheme;
+import com.sixstringmarket.util.Constants;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -193,75 +194,22 @@ public class MainFrame extends JFrame {
      */
     private void initComponents() {
         try {
-            System.out.println("Initializing components...");
-            
             // Main container panel
             mainPanel = new JPanel(new BorderLayout());
-            mainPanel.setBackground(ColorScheme.BACKGROUND);
+            mainPanel.setBackground(Constants.BACKGROUND_COLOR);
             
             // Create sidebar
-            System.out.println("Creating sidebar...");
             sidebarPanel = createSidebar();
             
-            // Create header with explicit reference to the title label
-            System.out.println("Creating header...");
-            headerPanel = new JPanel(new BorderLayout());
-            headerPanel.setBackground(ColorScheme.CARD_BG);
-            headerPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, ColorScheme.darken(ColorScheme.CARD_BG, 0.1f)),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
-            ));
-            
-            // Create and store the title label
-            headerTitleLabel = new JLabel("Home");
-            headerTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-            headerTitleLabel.setForeground(ColorScheme.TEXT);
-            headerPanel.add(headerTitleLabel, BorderLayout.WEST);
-            
-            // Center section with search
-            JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-            searchPanel.setOpaque(false);
-            
-            JTextField searchField = new JTextField(25);
-            searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            searchField.setBackground(ColorScheme.FIELD_BG);
-            searchField.setForeground(ColorScheme.TEXT);
-            searchField.setCaretColor(ColorScheme.TEXT);
-            searchField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
-                BorderFactory.createEmptyBorder(8, 10, 8, 10)
-            ));
-            searchPanel.add(searchField);
-            
-            JButton searchButton = new JButton("Search");
-            searchButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            searchButton.setBackground(ColorScheme.SECONDARY);
-            searchButton.setForeground(Color.WHITE);
-            searchButton.setBorderPainted(false);
-            searchButton.setFocusPainted(false);
-            searchPanel.add(searchButton);
-            
-            headerPanel.add(searchPanel, BorderLayout.CENTER);
-            
-            // Add Guitar button
-            JButton addGuitarButton = new JButton("+ Add Guitar");
-            addGuitarButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            addGuitarButton.setBackground(ColorScheme.SECONDARY);
-            addGuitarButton.setForeground(Color.WHITE);
-            addGuitarButton.setBorderPainted(false);
-            addGuitarButton.setFocusPainted(false);
-            addGuitarButton.addActionListener(e -> showAddGuitarFrame());
-            headerPanel.add(addGuitarButton, BorderLayout.EAST);
+            // Create header
+            headerPanel = createHeader();
             
             // Create content panel with card layout for panel switching
-            System.out.println("Creating content panel...");
-            contentCardLayout = new CardLayout();
-            contentCardPanel = new JPanel(contentCardLayout);
-            contentCardPanel.setOpaque(false);
+            createContentCardPanel();
             
             // Create main content area with header and content
             contentPanel = new JPanel(new BorderLayout());
-            contentPanel.setBackground(ColorScheme.BACKGROUND);
+            contentPanel.setBackground(Constants.BACKGROUND_COLOR);
             contentPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
             contentPanel.add(headerPanel, BorderLayout.NORTH);
             contentPanel.add(contentCardPanel, BorderLayout.CENTER);
@@ -276,21 +224,24 @@ public class MainFrame extends JFrame {
             
             // Set as content pane
             setContentPane(mainPanel);
-            
-            System.out.println("Components initialized successfully");
         } catch (Exception e) {
-            System.err.println("Error initializing components: " + e.getMessage());
+            // Handle any initialization errors
+            System.err.println("Error initializing main frame: " + e.getMessage());
             e.printStackTrace();
             
-            // Create a minimal content panel in case of error
+            // Create a simple error panel
             JPanel errorPanel = new JPanel(new BorderLayout());
-            errorPanel.setBackground(Color.WHITE);
+            errorPanel.setBackground(new Color(240, 240, 240));
             
-            JLabel errorLabel = new JLabel("Error initializing application UI: " + e.getMessage());
+            JLabel errorLabel = new JLabel("<html><h2>Error Initializing Application</h2>" + 
+                                          "<p>The application could not initialize properly. Please restart.</p>" +
+                                          "<p>Error details: " + e.getMessage() + "</p></html>", JLabel.CENTER);
             errorLabel.setForeground(Color.RED);
-            errorLabel.setHorizontalAlignment(JLabel.CENTER);
+            errorLabel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+            
             errorPanel.add(errorLabel, BorderLayout.CENTER);
             
+            // Set as content pane
             setContentPane(errorPanel);
         }
     }
@@ -723,9 +674,51 @@ public class MainFrame extends JFrame {
     /**
      * Update header title
      */
+    /**
+     * Update header title
+     */
     private void updateHeaderTitle(String title) {
-        JLabel titleLabel = (JLabel) ((JPanel) headerPanel.getComponent(0)).getComponent(0);
-        titleLabel.setText(title);
+        try {
+            // Look through all components in the header panel to find the title label
+            for (Component component : headerPanel.getComponents()) {
+                // Check if the component is the title label directly
+                if (component instanceof JLabel) {
+                    JLabel titleLabel = (JLabel) component;
+                    titleLabel.setText(title);
+                    return;
+                }
+                
+                // If not, check if it's a container that might contain the title label
+                if (component instanceof Container) {
+                    Container container = (Container) component;
+                    for (Component innerComponent : container.getComponents()) {
+                        if (innerComponent instanceof JLabel) {
+                            JLabel titleLabel = (JLabel) innerComponent;
+                            titleLabel.setText(title);
+                            return;
+                        }
+                        
+                        // Look one level deeper if needed
+                        if (innerComponent instanceof Container) {
+                            Container innerContainer = (Container) innerComponent;
+                            for (Component deepComponent : innerContainer.getComponents()) {
+                                if (deepComponent instanceof JLabel) {
+                                    JLabel titleLabel = (JLabel) deepComponent;
+                                    titleLabel.setText(title);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // If we couldn't find the title label, log a warning
+            System.out.println("Warning: Could not find title label in header panel");
+        } catch (Exception e) {
+            System.err.println("Error updating header title: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -979,7 +972,36 @@ public class MainFrame extends JFrame {
         EditGuitarFrame editGuitarFrame = new EditGuitarFrame(this, guitarId);
         editGuitarFrame.setVisible(true);
     }
-    
+    private void createContentCardPanel() {
+        try {
+            // Create the main card layout
+            contentCardLayout = new CardLayout();
+            contentCardPanel = new JPanel(contentCardLayout);
+            contentCardPanel.setOpaque(false);
+            
+            // Add an initial empty panel as placeholder
+            JPanel emptyPanel = new JPanel(new BorderLayout());
+            emptyPanel.setBackground(Constants.BACKGROUND_COLOR);
+            JLabel welcomeLabel = new JLabel("Welcome to SixStringMarket", JLabel.CENTER);
+            welcomeLabel.setFont(Constants.TITLE_FONT);
+            welcomeLabel.setForeground(Constants.PRIMARY_COLOR);
+            emptyPanel.add(welcomeLabel, BorderLayout.CENTER);
+            
+            // Add the empty panel to the card layout
+            contentCardPanel.add(emptyPanel, "empty");
+            contentCardLayout.show(contentCardPanel, "empty");
+        } catch (Exception e) {
+            System.err.println("Error creating content card panel: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Create a simple panel with error message if the card layout fails
+            contentCardPanel = new JPanel(new BorderLayout());
+            contentCardPanel.setBackground(Constants.BACKGROUND_COLOR);
+            JLabel errorLabel = new JLabel("Error initializing content panel: " + e.getMessage(), JLabel.CENTER);
+            errorLabel.setForeground(Color.RED);
+            contentCardPanel.add(errorLabel, BorderLayout.CENTER);
+        }
+    }
     /**
      * Clean up resources when the frame is closed
      */
