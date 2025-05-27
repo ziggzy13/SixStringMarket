@@ -8,13 +8,14 @@ import com.sixstringmarket.util.Constants;
 import com.sixstringmarket.util.ValidationUtils;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 
 /**
- * Panel for searching and filtering guitars
+ * Compact search and filter panel for guitars
  */
 public class SearchFilterPanel extends JPanel {
     
@@ -32,118 +33,103 @@ public class SearchFilterPanel extends JPanel {
     
     /**
      * Constructor
-     * @param parentPanel Parent guitar list panel
+     * @param parentPanel Parent panel
      */
     public SearchFilterPanel(GuitarListPanel parentPanel) {
         this.parentPanel = parentPanel;
         this.searchService = new SearchService();
         
-        setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5)); // Reduced padding
         setBackground(Constants.BACKGROUND_COLOR);
+        setBorder(new EmptyBorder(5, 5, 5, 5)); // Add small padding around the panel
         
-        try {
-            initComponents();
-            addEventListeners();
-        } catch (Exception e) {
-            System.err.println("Error initializing SearchFilterPanel: " + e.getMessage());
-            e.printStackTrace();
-            
-            // Clear any existing components
-            removeAll();
-            
-            // Add an error message
-            JLabel errorLabel = new JLabel("Error: Could not initialize search filters");
-            errorLabel.setForeground(Color.RED);
-            add(errorLabel);
-        }
+        initComponents();
+        addEventListeners();
     }
     
     /**
-     * Initialize panel components
+     * Initialize components with compact layout
      */
     private void initComponents() {
-        // Search field
-        searchField = new JTextField(15);
-        searchField.setToolTipText("Search by title, brand, model or description");
+        // Search field - make it narrower
+        searchField = new JTextField(10); // Reduced from 15 to 10
+        searchField.setToolTipText("Търсене по заглавие, марка, модел или описание");
+        searchField.setPreferredSize(new Dimension(100, 25)); // Set fixed height
+        add(createLabeledComponent("Търсене:", searchField));
         
-        // Brand dropdown
+        // Brand combo - make it more compact
         brandCombo = new JComboBox<>(Constants.GUITAR_BRANDS);
-        brandCombo.setPreferredSize(new Dimension(120, 25));
-        brandCombo.insertItemAt("All brands", 0);
+        brandCombo.setPreferredSize(new Dimension(100, 25)); // Reduced from 120 to 100
+        brandCombo.insertItemAt("Всички марки", 0);
         brandCombo.setSelectedIndex(0);
+        add(createLabeledComponent("Марка:", brandCombo));
         
-        // Type dropdown
-        String[] types = {"All types", "Acoustic", "Electric", "Classical", "Bass", "Other"};
+        // Type combo - make it more compact
+        String[] types = {"Всички типове", "Акустична", "Електрическа", "Класическа", "Бас", "Друга"};
         typeCombo = new JComboBox<>(types);
-        typeCombo.setPreferredSize(new Dimension(120, 25));
+        typeCombo.setPreferredSize(new Dimension(100, 25)); // Reduced from 120 to 100
+        add(createLabeledComponent("Тип:", typeCombo));
         
-        // Condition dropdown
-        String[] conditions = {"All conditions", "New", "Used", "Vintage"};
+        // Condition combo - make it more compact
+        String[] conditions = {"Всички състояния", "Нова", "Употребявана", "Винтидж"};
         conditionCombo = new JComboBox<>(conditions);
-        conditionCombo.setPreferredSize(new Dimension(120, 25));
+        conditionCombo.setPreferredSize(new Dimension(100, 25)); // Reduced from 120 to 100
+        add(createLabeledComponent("Състояние:", conditionCombo));
         
-        // Price fields
-        minPriceField = new JTextField(5);
-        minPriceField.setToolTipText("Minimum price");
+        // Price fields - make them narrower
+        minPriceField = new JTextField(4); // Reduced from 5 to 4
+        minPriceField.setToolTipText("Минимална цена");
+        minPriceField.setPreferredSize(new Dimension(50, 25)); // Set fixed size
         
-        maxPriceField = new JTextField(5);
-        maxPriceField.setToolTipText("Maximum price");
+        maxPriceField = new JTextField(4); // Reduced from 5 to 4
+        maxPriceField.setToolTipText("Максимална цена");
+        maxPriceField.setPreferredSize(new Dimension(50, 25)); // Set fixed size
         
-        // Buttons
-        searchButton = new JButton("Search");
-        searchButton.setBackground(Constants.PRIMARY_COLOR);
-        searchButton.setForeground(Color.WHITE);
-        
-        resetButton = new JButton("Reset");
-        resetButton.setBackground(Color.LIGHT_GRAY);
-        resetButton.setForeground(Color.BLACK);
-        
-        // Add components to panel using separate methods for each section
-        // This prevents one error from affecting the entire panel
-        
-        // Search section
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        searchPanel.setBackground(Constants.BACKGROUND_COLOR);
-        searchPanel.add(new JLabel("Search:"));
-        searchPanel.add(searchField);
-        add(searchPanel);
-        
-        // Brand section
-        JPanel brandPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        brandPanel.setBackground(Constants.BACKGROUND_COLOR);
-        brandPanel.add(new JLabel("Brand:"));
-        brandPanel.add(brandCombo);
-        add(brandPanel);
-        
-        // Type section
-        JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        typePanel.setBackground(Constants.BACKGROUND_COLOR);
-        typePanel.add(new JLabel("Type:"));
-        typePanel.add(typeCombo);
-        add(typePanel);
-        
-        // Condition section
-        JPanel conditionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        conditionPanel.setBackground(Constants.BACKGROUND_COLOR);
-        conditionPanel.add(new JLabel("Condition:"));
-        conditionPanel.add(conditionCombo);
-        add(conditionPanel);
-        
-        // Price section
-        JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        // Create a compact price range panel
+        JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
         pricePanel.setBackground(Constants.BACKGROUND_COLOR);
-        pricePanel.add(new JLabel("Price from:"));
+        pricePanel.add(new JLabel("Цена от:"));
         pricePanel.add(minPriceField);
-        pricePanel.add(new JLabel("to:"));
+        pricePanel.add(new JLabel("до:"));
         pricePanel.add(maxPriceField);
         add(pricePanel);
         
-        // Button section
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        // Buttons - make them properly sized with text
+        searchButton = new JButton("Търси");
+        searchButton.setToolTipText("Търси");
+        searchButton.setBackground(Constants.PRIMARY_COLOR);
+        searchButton.setForeground(Color.BLACK);
+        searchButton.setPreferredSize(new Dimension(70, 25)); // Wider button to accommodate text
+        searchButton.setFont(new Font("Segoe UI", Font.BOLD, 12)); // Adjust font
+        
+        resetButton = new JButton("Изчисти");
+        resetButton.setToolTipText("Изчисти");
+        resetButton.setBackground(Color.LIGHT_GRAY);
+        resetButton.setForeground(Color.BLACK);
+        resetButton.setPreferredSize(new Dimension(90, 25)); // Wider button to accommodate text
+        resetButton.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Adjust font
+        
+        // Create button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
         buttonPanel.setBackground(Constants.BACKGROUND_COLOR);
         buttonPanel.add(searchButton);
         buttonPanel.add(resetButton);
         add(buttonPanel);
+    }
+    
+    /**
+     * Create labeled component panel
+     */
+    private JPanel createLabeledComponent(String labelText, JComponent component) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+        panel.setBackground(Constants.BACKGROUND_COLOR);
+        
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 12)); // Smaller font
+        panel.add(label);
+        panel.add(component);
+        
+        return panel;
     }
     
     /**
@@ -154,18 +140,7 @@ public class SearchFilterPanel extends JPanel {
         searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    searchGuitars();
-                } catch (Exception ex) {
-                    System.err.println("Error searching guitars: " + ex.getMessage());
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(
-                        SearchFilterPanel.this,
-                        "Error searching guitars: " + ex.getMessage(),
-                        "Search Error",
-                        JOptionPane.ERROR_MESSAGE
-                    );
-                }
+                searchGuitars();
             }
         });
         
@@ -173,24 +148,21 @@ public class SearchFilterPanel extends JPanel {
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    resetFilters();
-                } catch (Exception ex) {
-                    System.err.println("Error resetting filters: " + ex.getMessage());
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(
-                        SearchFilterPanel.this,
-                        "Error resetting filters: " + ex.getMessage(),
-                        "Reset Error",
-                        JOptionPane.ERROR_MESSAGE
-                    );
-                }
+                resetFilters();
+            }
+        });
+        
+        // Add Enter key listener for search field
+        searchField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                searchGuitars();
             }
         });
     }
     
     /**
-     * Search guitars with current filters
+     * Search for guitars with current filters
      */
     private void searchGuitars() {
         // Extract values from filters
@@ -222,51 +194,42 @@ public class SearchFilterPanel extends JPanel {
         }
         
         BigDecimal minPrice = null;
-        String minPriceText = minPriceField.getText().trim();
-        if (!minPriceText.isEmpty()) {
+        if (!minPriceField.getText().trim().isEmpty()) {
             try {
-                minPrice = new BigDecimal(minPriceText);
+                minPrice = new BigDecimal(minPriceField.getText().trim());
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this,
-                    "Invalid minimum price. Please enter a number.",
-                    "Validation Error",
+                    "Невалидна минимална цена. Моля, въведете число.",
+                    "Грешка при валидация",
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
         
         BigDecimal maxPrice = null;
-        String maxPriceText = maxPriceField.getText().trim();
-        if (!maxPriceText.isEmpty()) {
+        if (!maxPriceField.getText().trim().isEmpty()) {
             try {
-                maxPrice = new BigDecimal(maxPriceText);
+                maxPrice = new BigDecimal(maxPriceField.getText().trim());
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this,
-                    "Invalid maximum price. Please enter a number.",
-                    "Validation Error",
+                    "Невалидна максимална цена. Моля, въведете число.",
+                    "Грешка при валидация",
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
         
-        // Check if minimum price is less than maximum price
+        // Check if min price is less than max price
         if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
             JOptionPane.showMessageDialog(this,
-                "Minimum price cannot be greater than maximum price.",
-                "Validation Error",
+                "Минималната цена не може да бъде по-голяма от максималната.",
+                "Грешка при валидация",
                 JOptionPane.ERROR_MESSAGE);
             return;
         }
         
         // Call search in parent panel
-        if (parentPanel != null) {
-            parentPanel.searchGuitars(keyword, type, brand, minPrice, maxPrice, condition);
-        } else {
-            JOptionPane.showMessageDialog(this,
-                "Cannot perform search: parent panel is null.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
-        }
+        parentPanel.searchGuitars(keyword, type, brand, minPrice, maxPrice, condition);
     }
     
     /**
@@ -280,14 +243,7 @@ public class SearchFilterPanel extends JPanel {
         minPriceField.setText("");
         maxPriceField.setText("");
         
-        // Reload all guitars
-        if (parentPanel != null) {
-            parentPanel.loadGuitars();
-        } else {
-            JOptionPane.showMessageDialog(this,
-                "Cannot reset: parent panel is null.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
-        }
+        // Load all guitars
+        parentPanel.loadGuitars();
     }
 }

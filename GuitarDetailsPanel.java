@@ -75,6 +75,7 @@ public class GuitarDetailsPanel extends JPanel {
 
 		JButton backButton = new JButton("« Назад");
 		backButton.addActionListener(e -> parentFrame.showGuitarListPanel());
+		backButton.setForeground(Constants.TEXT_COLOR);
 		topPanel.add(backButton, BorderLayout.WEST);
 
 		add(topPanel, BorderLayout.NORTH);
@@ -224,7 +225,11 @@ public class GuitarDetailsPanel extends JPanel {
 				JButton saveButton = new JButton(isSaved ? "Премахни от запазени" : "Запази");
 				saveButton.setBackground(isSaved ? Color.GRAY : Constants.SECONDARY_COLOR);
 				saveButton.setForeground(Color.BLACK);
-				saveButton.addActionListener(e -> toggleSaveGuitar(saveButton, isSaved));
+				saveButton.addActionListener(e -> {
+				    // Вземане на текущото състояние от текста на бутона
+				    boolean currentSaved = saveButton.getText().equals("Премахни от запазени");
+				    toggleSaveGuitar(saveButton, currentSaved);
+				});
 				buttonsPanel.add(saveButton);
 			}
 
@@ -429,7 +434,9 @@ public class GuitarDetailsPanel extends JPanel {
 
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(e -> reviewDialog.dispose());
-
+		cancelButton.setBackground(Constants.PRIMARY_COLOR);
+		cancelButton.setForeground(Color.BLACK);
+		
 		JButton submitButton = new JButton("Submit");
 		submitButton.setBackground(Constants.PRIMARY_COLOR);
 		submitButton.setForeground(Color.BLACK);
@@ -546,25 +553,25 @@ public class GuitarDetailsPanel extends JPanel {
 	 * @param isSaved    Флаг дали китарата е запазена
 	 */
 	private void toggleSaveGuitar(JButton saveButton, boolean isSaved) {
-		boolean success;
-
-		if (isSaved) {
-			success = savedGuitarService.removeFromSaved(currentUser.getUserId(), guitar.getGuitarId());
-			if (success) {
-				saveButton.setText("Запази");
-				saveButton.setBackground(Constants.SECONDARY_COLOR);
-			}
-		} else {
-			success = savedGuitarService.saveGuitar(currentUser.getUserId(), guitar.getGuitarId());
-			if (success) {
-				saveButton.setText("Премахни от запазени");
-				saveButton.setBackground(Color.GRAY);
-			}
-		}
-
-		if (!success) {
-			showErrorMessage("Грешка при обработката. Моля, опитайте отново.");
-		}
+	    boolean success;
+	    
+	    if (isSaved) {
+	        success = savedGuitarService.removeFromSaved(currentUser.getUserId(), guitar.getGuitarId());
+	        if (success) {
+	            saveButton.setText("Запази");
+	            saveButton.setBackground(Constants.SECONDARY_COLOR);
+	        }
+	    } else {
+	        success = savedGuitarService.saveGuitar(currentUser.getUserId(), guitar.getGuitarId());
+	        if (success) {
+	            saveButton.setText("Премахни от запазени");
+	            saveButton.setBackground(Color.GRAY);
+	        }
+	    }
+	    
+	    if (!success) {
+	        showErrorMessage("Грешка при обработката. Моля, опитайте отново.");
+	    }
 	}
 
 	/**

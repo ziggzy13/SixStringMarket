@@ -512,18 +512,7 @@ public class MainFrame extends JFrame {
         // Center section with search
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         searchPanel.setOpaque(false);
-        
-        JTextField searchField = new JTextField(25);
-        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        searchField.setBackground(ColorScheme.FIELD_BG);
-        searchField.setForeground(ColorScheme.TEXT);
-        searchField.setCaretColor(ColorScheme.TEXT);
-        searchField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(ColorScheme.FIELD_BORDER),
-            BorderFactory.createEmptyBorder(8, 10, 8, 10)
-        ));
-        searchField.putClientProperty("JTextField.placeholderText", "Search for guitars...");
-        
+       
         JButton searchButton = new JButton("Search");
         searchButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         searchButton.setBackground(ColorScheme.SECONDARY);
@@ -544,8 +533,6 @@ public class MainFrame extends JFrame {
             }
         });
         
-        searchPanel.add(searchField);
-        searchPanel.add(searchButton);
         
         // Right section with add guitar button
         JButton addGuitarButton = new JButton("+ Add Guitar");

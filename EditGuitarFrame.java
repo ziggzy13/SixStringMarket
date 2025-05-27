@@ -111,6 +111,8 @@ public class EditGuitarFrame extends JDialog {
         imagePathField.setEditable(false);
         
         browseButton = new JButton("Промени снимка");
+        browseButton.setBackground(Constants.PRIMARY_COLOR);
+        browseButton.setForeground(Color.BLACK);
         
         saveButton = new JButton("Запази промените");
         saveButton.setBackground(Constants.PRIMARY_COLOR);

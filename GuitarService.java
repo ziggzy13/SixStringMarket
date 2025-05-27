@@ -76,7 +76,6 @@ public class GuitarService {
      * @throws IllegalArgumentException ако данните са невалидни
      */
     public boolean updateGuitar(Guitar guitar, String newImagePath) {
-        // Валидация на входните данни
         if (guitar.getTitle() == null || guitar.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Заглавието е задължително");
         }
@@ -89,11 +88,11 @@ public class GuitarService {
             throw new IllegalArgumentException("Цената трябва да бъде положително число");
         }
         
-        // Ако има ново изображение, обработваме го
+       
         if (newImagePath != null && !newImagePath.trim().isEmpty()) {
             String savedImagePath = ImageHandler.saveImage(newImagePath, "guitars");
             
-            // Ако вече има стара снимка, изтриваме я
+          
             Guitar existingGuitar = guitarDAO.getGuitarById(guitar.getGuitarId());
             if (existingGuitar != null && existingGuitar.getImagePath() != null) {
                 ImageHandler.deleteImage(existingGuitar.getImagePath());
@@ -138,14 +137,20 @@ public class GuitarService {
      * @return true ако операцията е успешна, false в противен случай
      */
     public boolean removeGuitar(int guitarId) {
-        // Първо получаваме китарата за да имаме информация за пътя до изображението
         Guitar guitar = guitarDAO.getGuitarById(guitarId);
-        if (guitar != null && guitar.getImagePath() != null) {
-            // Изтриваме изображението от файловата система
-            ImageHandler.deleteImage(guitar.getImagePath());
+        if (guitar == null) {
+            return false;
         }
         
-        return guitarDAO.deleteGuitar(guitarId);
+        try {
+            if (guitar.getImagePath() != null && !guitar.getImagePath().isEmpty()) {
+                ImageHandler.deleteImage(guitar.getImagePath());
+            }
+            return guitarDAO.deleteGuitar(guitarId);
+        } catch (Exception e) {
+            System.err.println("Грешка при изтриване на китара: " + e.getMessage());
+            return false;
+        }
     }
     
     /**
